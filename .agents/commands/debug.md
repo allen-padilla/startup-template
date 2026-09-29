@@ -19,7 +19,7 @@ Use evidence-first debugging.
 5. State the likely root cause.
 6. Make the smallest fix.
 7. Re-run the original failing command.
-8. Run broader verification.
+8. Run broader verification: `pnpm verify`, plus `pnpm verify:full` when the fix affects significant application behavior or complete user workflows.
 
 ## Report
 
@@ -30,3 +30,5 @@ Return:
 - fix
 - verification
 - any unresolved concerns
+
+Do not commit unless explicitly requested.

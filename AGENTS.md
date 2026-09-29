@@ -55,15 +55,11 @@ It currently covers:
 - fast automated tests
 - production build
 
-Before considering implementation complete, run `pnpm verify`.
+`pnpm verify` is required before considering implementation complete.
+
+Also run `pnpm verify:full` for changes affecting significant application behavior or complete user workflows, including authentication, billing, routing, and other cross-system or user-facing behavior. It adds end-to-end browser testing. Documentation-only changes do not require it.
 
 Do not claim a change is complete if verification fails.
-
-For significant user-facing, authentication, billing, routing, or workflow changes, also run:
-
-`pnpm verify:full`
-
-This adds end-to-end browser testing.
 
 ## Architecture
 
@@ -128,15 +124,7 @@ Schema changes must use the database migration workflow.
 
 For schema changes, use the `database-migration` skill.
 
-Generated migrations must be reviewed before they are applied.
-
-Inspect generated SQL for:
-
-- destructive operations
-- accidental drops
-- unsafe renames
-- missing constraints
-- data-loss implications
+Generated migration SQL must be reviewed for destructive or data-loss changes before it is applied.
 
 Never run destructive production database operations unless the task explicitly authorizes a reviewed production procedure.
 
@@ -163,7 +151,7 @@ Prefer tests that validate externally meaningful behavior rather than implementa
 
 Do not delete, skip, or weaken tests merely to make a change pass.
 
-Use `pnpm verify:full` for significant changes affecting complete user workflows.
+See Verification for when to run `pnpm verify:full`.
 
 ## Observability
 
@@ -196,38 +184,25 @@ Examples include:
 
 When a tool owns a marked section, preserve the section boundaries.
 
-## Skills
-
-Repository-specific procedural workflows live in `.agents/skills/`.
-
-Use a skill when the task matches that workflow instead of improvising a new process.
-
-Current important skill:
-
-- `database-migration` — safe Drizzle/PostgreSQL schema changes
-
 ## Agent Workflows
 
-Repository-specific agent workflows live in `.agents/`.
+The agent harness lives in `.agents/`. See `docs/architecture/agent-workflows.md` for how its layers fit together and which guidance takes precedence.
 
-- `.agents/rules/` contains detailed repository rules.
-- `.agents/skills/` contains repeatable procedural workflows.
-- `.agents/commands/` contains standard task workflows.
-- `.agents/agents/` contains specialized agent roles.
+- `.agents/rules/repository.md` — detailed repository rules. Read it before substantive repository work.
+- `.agents/skills/` — repeatable procedures. When a task matches a skill, read and follow it instead of improvising.
+- `.agents/commands/` — workflow modes: `plan`, `implement`, `debug`, `review`.
+- `.agents/agents/` — role definitions: `planner`, `implementer`, `reviewer`.
 
-For substantial tasks, prefer:
+Current skills:
 
-1. understand
-2. plan
-3. implement
-4. verify
-5. review
+- `database-migration` — Drizzle/PostgreSQL schema changes
+- `add-api-route` — Next.js route handlers in `apps/web`
+- `add-environment-variable` — server and browser environment variables
+- `add-package` — `@startup/*` workspace packages
 
-Feature behavior may be specified in `docs/specs/`.
+Desired feature behavior may be specified in `docs/specs/`. Implementation plans may be saved in `docs/plans/` when requested.
 
-Implementation plans may be stored in `docs/plans/`.
-
-Do not duplicate detailed procedures into `AGENTS.md`.
+Keep detailed procedures in `.agents/`, not in `AGENTS.md`.
 
 <!-- BEGIN:turborepo-agent-rules -->
 

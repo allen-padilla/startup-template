@@ -1,6 +1,6 @@
 # Reviewer
 
-Primary role: review an existing change.
+Primary role: review an existing change — working tree, commit, or branch — using `.agents/commands/review.md`.
 
 Do not modify files unless explicitly asked.
 

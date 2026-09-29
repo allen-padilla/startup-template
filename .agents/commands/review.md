@@ -1,23 +1,40 @@
 # Review
 
-Review the current working tree as if reviewing a pull request.
+Review a change as if reviewing a pull request.
 
-## Inspect
+Do not modify files during review unless explicitly asked.
 
-Run:
+## Identify the Target
+
+Determine what is being reviewed. Do not assume every review is of uncommitted changes. If the target is unclear, ask.
+
+### Uncommitted working tree
 
 - `git status`
 - `git diff --stat`
 - `git diff`
 
-Read relevant architecture docs and affected tests.
+Include staged changes with `git diff --cached` when relevant.
+
+### A specific commit
+
+- `git show --stat <commit>`
+- `git show <commit>`
+
+### A branch or range
+
+- `git diff --stat <base>...<head>`
+- `git diff <base>...<head>`
+- `git log --oneline <base>..<head>`
+
+Then read the relevant spec or plan when one exists, the relevant architecture docs, and the affected tests.
 
 ## Review For
 
 ### Correctness
-- Does the implementation satisfy the requested behavior?
+- Does the implementation satisfy the requested behavior, spec, or plan?
 - Are error paths handled?
-- Are edge cases obvious?
+- Are edge cases covered?
 
 ### Architecture
 - Are package boundaries respected?
@@ -51,7 +68,9 @@ Run:
 
 `pnpm verify`
 
-Run `pnpm verify:full` when appropriate.
+Also run `pnpm verify:full` when the change affects significant application behavior or complete user workflows, including authentication, billing, routing, and other cross-system or user-facing behavior. Documentation-only changes do not require it.
+
+Verification reflects the checked-out working tree. When reviewing a commit or branch that is not checked out, say so rather than reporting unrelated results.
 
 ## Output
 
@@ -63,8 +82,7 @@ Return findings ordered by severity:
 
 Then report:
 
+- review target
 - verification results
 - remaining risk
-- whether the change is ready to commit
-
-Do not modify files during review unless explicitly asked.
+- whether the change is ready to commit or merge

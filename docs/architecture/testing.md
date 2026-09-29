@@ -17,11 +17,9 @@ Agents must run this before considering implementation complete.
 
 ## Full Verification
 
-For significant user-facing, authentication, billing, routing, or workflow changes, run:
+Also run `pnpm verify:full` for changes affecting significant application behavior or complete user workflows, including authentication, billing, routing, and other cross-system or user-facing behavior.
 
-`pnpm verify:full`
-
-This additionally runs Playwright end-to-end tests.
+`pnpm verify:full` runs `pnpm verify` and then the Playwright end-to-end tests. Documentation-only changes do not require it.
 
 ## Unit and Integration Tests
 
