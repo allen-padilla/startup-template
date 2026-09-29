@@ -32,6 +32,89 @@ The template lives at [github.com/allen-padilla/startup-template](https://github
 | Testing         | Vitest, Playwright                            |
 | CI              | GitHub Actions, Dependabot                    |
 
+## How It Fits Together
+
+```mermaid
+flowchart LR
+  browser["Browser"]
+  stripe["Stripe"]
+
+  subgraph web["apps/web (Next.js)"]
+    pages["Pages and components"]
+    authRoute["/api/auth/*"]
+    checkoutRoute["/api/billing/checkout"]
+    webhookRoute["/api/billing/webhook"]
+  end
+
+  subgraph packages["packages/"]
+    auth["@startup/auth"]
+    billing["@startup/billing"]
+    db["@startup/db"]
+  end
+
+  postgres[("PostgreSQL")]
+  observability["Sentry and PostHog"]
+
+  browser --> pages
+  browser --> authRoute
+  browser --> checkoutRoute
+  stripe -- "signed webhooks" --> webhookRoute
+  authRoute --> auth
+  checkoutRoute --> auth
+  checkoutRoute --> billing
+  webhookRoute --> billing
+  auth --> db
+  billing --> db
+  db --> postgres
+  billing -- "customers, checkout" --> stripe
+  web -.-> observability
+
+  classDef optional stroke-dasharray: 5 5
+  class stripe,observability optional
+```
+
+The browser only talks to the Next.js application. Route handlers stay thin: they check the session, call a package, and turn errors into HTTP responses.
+
+Each integration lives in one package. `@startup/auth` is the only code that imports `better-auth`, `@startup/billing` the only code that imports `stripe`, and `@startup/db` the only code that opens a database connection.
+
+Dashed services are optional locally.
+
+### A Subscription, End to End
+
+```mermaid
+sequenceDiagram
+  actor User
+  participant App as apps/web
+  participant Billing as @startup/billing
+  participant DB as PostgreSQL
+  participant Stripe
+
+  User->>App: POST /api/billing/checkout
+  App->>Billing: createSubscriptionCheckout(user)
+  Billing->>DB: may this user check out?
+  Billing->>Stripe: get or create customer, create Checkout Session
+  Billing-->>App: Checkout URL
+  App-->>User: { url }
+  User->>Stripe: pays on Stripe Checkout
+  Stripe-->>User: redirect to /?checkout=success
+  Note over User,App: The redirect changes nothing.
+
+  Stripe->>App: POST /api/billing/webhook (signed)
+  App->>Billing: verify signature over the raw body
+  Billing->>Stripe: fetch the subscription's current state
+  Billing->>DB: upsert subscription
+  App-->>Stripe: 200
+
+  User->>App: request a paid feature
+  App->>Billing: getUserEntitlement(userId)
+  Billing->>DB: active or trialing subscription?
+  Billing-->>App: entitled
+```
+
+Paying does not grant access by itself. Access changes only when a verified webhook arrives, and the handler re-reads the subscription from Stripe instead of trusting the event, so duplicate or out-of-order deliveries end in the same state.
+
+Code that needs to know whether a user has paid calls `getUserEntitlement`. See [docs/architecture/billing.md](docs/architecture/billing.md).
+
 ## Requirements
 
 - **Node.js 24.** `.node-version` pins it for version managers such as fnm and nvm.
@@ -160,6 +243,28 @@ Run commands from the repository root.
 | `tests/e2e`                  | Playwright tests                                   |
 | `docs/architecture`          | how the system is built                            |
 | `scripts`                    | repository automation                              |
+
+```mermaid
+flowchart TD
+  web["apps/web"]
+  auth["@startup/auth"]
+  billing["@startup/billing"]
+  ui["@startup/ui"]
+  db["@startup/db"]
+  env["@startup/env"]
+
+  web --> auth
+  web --> billing
+  web --> ui
+  web --> env
+  auth --> db
+  auth --> env
+  billing --> db
+  billing --> env
+  db --> env
+```
+
+Arrows point from a package to what it depends on. Every package also uses `@startup/typescript-config`, which is left out to keep the graph readable.
 
 Applications depend on packages. Packages never depend on applications. See [docs/architecture/package-boundaries.md](docs/architecture/package-boundaries.md).
 
