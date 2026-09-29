@@ -45,6 +45,7 @@ The current E2E suite includes smoke coverage for:
 
 - homepage loading
 - authentication endpoint availability
+- billing endpoint protection (unauthenticated checkout, unsigned webhooks)
 
 Playwright runs against a production-style Next.js server for more deterministic testing.
 

@@ -140,6 +140,19 @@ Inspect generated SQL for:
 
 Never run destructive production database operations unless the task explicitly authorizes a reviewed production procedure.
 
+## Billing
+
+Stripe server code lives in `packages/billing` (`@startup/billing`). Do not import `stripe` elsewhere.
+
+- `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are server-only. Never expose them via `NEXT_PUBLIC_*` or client code.
+- Price IDs come from server configuration. Never treat a client-supplied price ID as authoritative.
+- Subscription state comes only from verified Stripe webhooks. Checkout redirects never grant paid access.
+- Decide paid access with `getUserEntitlement` from `@startup/billing`. Do not interpret subscription statuses elsewhere.
+- Webhook handlers must verify signatures over the raw body and be idempotent.
+- Use Stripe test mode for development and testing.
+
+See `docs/architecture/billing.md`.
+
 ## Testing
 
 Vitest is used for fast unit and integration-level tests.

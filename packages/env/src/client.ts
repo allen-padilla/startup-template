@@ -1,9 +1,6 @@
 import { z } from "zod";
 
-// Treat empty strings (e.g. `NEXT_PUBLIC_SENTRY_DSN=`) as unset so optional
-// integrations stay disabled instead of failing validation.
-const optional = <T extends z.ZodType>(schema: T) =>
-  z.preprocess((value) => (value === "" ? undefined : value), schema.optional());
+import { optional } from "./optional";
 
 const clientSchema = z.object({
   NEXT_PUBLIC_SENTRY_DSN: optional(z.string().url()),

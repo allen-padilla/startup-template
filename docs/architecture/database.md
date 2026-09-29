@@ -22,6 +22,10 @@ Authentication-related tables are currently defined in:
 
 `packages/db/src/schema/auth.ts`
 
+Billing tables (`billing_customers`, `subscriptions`) are defined in:
+
+`packages/db/src/schema/billing.ts`
+
 ## Migrations
 
 Generated Drizzle migrations live in:

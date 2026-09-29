@@ -12,6 +12,7 @@
   "dependencies": {
     "@sentry/nextjs": "^11.0.0",
     "@startup/auth": "workspace:*",
+    "@startup/billing": "workspace:*",
     "@startup/env": "workspace:*",
     "@startup/ui": "workspace:*",
     "next": "16.3.6",

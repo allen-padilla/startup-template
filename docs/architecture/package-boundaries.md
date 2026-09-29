@@ -73,3 +73,11 @@ Better Auth configuration.
 Depends on `@startup/db` and `@startup/env`.
 
 See `authentication.md`.
+
+### @startup/billing
+
+Server-side Stripe integration: customer mapping, checkout, webhook verification, and subscription synchronization.
+
+Server-only. Owns the `stripe` dependency. Depends on `@startup/db` and `@startup/env`.
+
+See `billing.md`.
