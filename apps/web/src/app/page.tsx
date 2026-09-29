@@ -1,4 +1,4 @@
-import { UI_PACKAGE_NAME } from "@startup/ui";
+import { Button } from "@startup/ui";
 
 export default function Home() {
   return (
@@ -14,7 +14,7 @@ export default function Home() {
           A production-oriented starting point for new applications. Replace
           this page with your own landing page when you are ready.
         </p>
-        <p>{UI_PACKAGE_NAME}</p>
+        <Button>Get Started</Button>
       </div>
     </main>
   );

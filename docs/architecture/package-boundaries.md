@@ -33,3 +33,15 @@ packages → apps
 Shared TypeScript configuration for the repository.
 
 This package contains configuration only and must not contain application runtime code.
+
+### @startup/ui
+
+Shared React UI components and design-system primitives.
+
+Applications may depend on this package.
+
+The package must not depend on application code.
+
+Consumers should import from the package's public API rather than internal source paths.
+
+Shared UI primitives belong here when they are reusable across application surfaces.

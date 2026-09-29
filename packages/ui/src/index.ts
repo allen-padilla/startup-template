@@ -1,1 +1,2 @@
-export const UI_PACKAGE_NAME = "@startup/ui";
+export { Button } from "./components/button";
+export type { ButtonProps } from "./components/button";
