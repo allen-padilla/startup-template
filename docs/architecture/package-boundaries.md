@@ -45,6 +45,7 @@ The package must not depend on application code.
 Consumers should import from the package's public API rather than internal source paths.
 
 Shared UI primitives belong here when they are reusable across application surfaces.
+
 ### @startup/env
 
 Validated environment configuration.

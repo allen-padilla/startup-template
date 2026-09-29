@@ -20,6 +20,8 @@ These rules apply to all substantive work in this repository. They add operation
 
 ## Dependencies
 
+See `docs/architecture/dependencies.md`.
+
 - Use pnpm only.
 - Add dependencies to the package that imports them, using `pnpm --filter <package> add <dependency>`.
 - Use `workspace:*` for internal `@startup/*` dependencies.

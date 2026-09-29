@@ -21,6 +21,8 @@ Do not use npm or yarn for dependency management.
 
 Run workspace commands from the repository root unless a task specifically requires a package-local command.
 
+See `docs/architecture/dependencies.md` before adding or upgrading dependencies.
+
 ## Development
 
 Node.js 24 is required.
@@ -151,7 +153,7 @@ Prefer tests that validate externally meaningful behavior rather than implementa
 
 Do not delete, skip, or weaken tests merely to make a change pass.
 
-See Verification for when to run `pnpm verify:full`.
+See Verification for when to run `pnpm verify:full`. See `docs/architecture/testing.md` for what end-to-end tests need before they can run.
 
 ## Observability
 
