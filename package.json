@@ -23,7 +23,7 @@
     "verify:full": "pnpm verify && pnpm test:e2e"
   },
   "keywords": [],
-  "author": "",
+  "author": "Allen",
   "license": "ISC",
   "devEngines": {
     "packageManager": {

@@ -4,17 +4,33 @@ Use this list after creating a new project from the template.
 
 Creating a repository from a GitHub template copies the files only. It does not copy repository settings, secrets, branch protection, or Git history.
 
+## Names and Identity
+
+The template keeps three kinds of names separate:
+
+| Name       | Value in the template | Meaning                                                                                    |
+| ---------- | --------------------- | ------------------------------------------------------------------------------------------ |
+| Maintainer | Allen                 | the brand that maintains the template: the closing README line and `package.json` `author` |
+| Template   | Startup Template      | the placeholder product name in the README, the application metadata, and the landing page |
+| Product    | none                  | chosen for each project created from the template                                          |
+
+- Give every product its own name. A product maintained by Allen may add a "by Allen" attribution, such as "RepoGuide by Allen". The product name itself stays independent: "RepoGuide", not "Allen RepoGuide".
+- Customize the product metadata for each project. The "Startup Template" values are placeholders, not a brand.
+- The GitHub owner `@allen-padilla` is the maintainer's GitHub account, which is separate from the display brand. It appears in `.github/CODEOWNERS` and in documentation.
+- `@startup/*` is an intentional reusable template scope. It names the template, not a brand. Keep it unless you rename it deliberately (see [Optional](#optional)).
+- If you reuse the template and you are not Allen, replace the maintainer values and the GitHub owner with your own.
+
 ## Replace Immediately
 
-These values identify the template or its author. Replace them before the first real commit.
+These values identify the template or its maintainer. Replace them before the first real commit.
 
-- [ ] **`.github/CODEOWNERS`**: replace `@allen-padilla` with your own user or team. Until you do, GitHub requests review from someone outside your project, or reports an invalid owner.
+- [ ] **`.github/CODEOWNERS`**: replace `@allen-padilla` with your own user or team, unless the new repository is also owned by that account. Until you do, GitHub requests review from someone outside your project, or reports an invalid owner.
 - [ ] **Root `package.json`**:
   - `name`: currently `startup-template`
   - `description`
   - `license`: currently `ISC`, a package-manager default. The repository has no `LICENSE` file. Choose a license deliberately, or use `UNLICENSED` for proprietary code.
-  - `author`
-- [ ] **`README.md`**: the title, the introduction, and the clone command.
+  - `author`: currently `Allen`, the template maintainer
+- [ ] **`README.md`**: the title, the introduction, the clone command, and the closing "Maintained by Allen." line.
 - [ ] **Application metadata** in `apps/web/src/app/layout.tsx`: `title` and `description`, both currently about the template.
 - [ ] **Landing page** in `apps/web/src/app/page.tsx`: placeholder content.
 - [ ] **Icon** at `apps/web/src/app/favicon.ico`: the Next.js default.
@@ -81,7 +97,7 @@ After the replacements:
 ```bash
 ./scripts/check-environment.sh
 pnpm verify:full
-git grep -n -i -E "allen-padilla|startup-template|startup template"
+git grep -n -i -E "allen|startup-template|startup template"
 ```
 
-The last command lists the remaining references to the template. Review each one.
+The last command lists the remaining references to the template and its maintainer. Review each one.
