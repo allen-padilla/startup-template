@@ -28,8 +28,9 @@ These values identify the template or its maintainer. Replace them before the fi
 - [ ] **Root `package.json`**:
   - `name`: currently `startup-template`
   - `description`
-  - `license`: currently `ISC`, a package-manager default. The repository has no `LICENSE` file. Choose a license deliberately, or use `UNLICENSED` for proprietary code.
+  - `license`: currently `MIT`, the template's license. Set your project's license, or `UNLICENSED` for proprietary code.
   - `author`: currently `Allen`, the template maintainer
+- [ ] **`LICENSE`**: the template's MIT license, copyright Allen. MIT requires keeping this notice in copies of the template, including proprietary ones. Keep it, for example renamed to `LICENSE-TEMPLATE`, and add your own license for your project.
 - [ ] **`README.md`**: the title, the introduction, the clone command, and the closing "Maintained by Allen." line.
 - [ ] **Application metadata** in `apps/web/src/app/layout.tsx`: `title` and `description`, both currently about the template.
 - [ ] **Landing page** in `apps/web/src/app/page.tsx`: placeholder content.

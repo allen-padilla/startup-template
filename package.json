@@ -24,7 +24,7 @@
   },
   "keywords": [],
   "author": "Allen",
-  "license": "ISC",
+  "license": "MIT",
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
