@@ -246,13 +246,17 @@ See [docs/architecture/dependencies.md](docs/architecture/dependencies.md).
 
 After creating a project from this template, replace these values first:
 
-- `.github/CODEOWNERS`: the owner is the template author
+- `.github/CODEOWNERS`: the owner is the template maintainer's GitHub account
 - `package.json`: `name`, `description`, `license`, and `author`
-- this README: the title and introduction
+- this README: the title, the introduction, and the closing maintainer line
 - `apps/web/src/app/layout.tsx` and `page.tsx`: the application title, description, and landing page
 - `apps/web/src/app/favicon.ico`: the icon
 - Stripe, Sentry, and PostHog: your own accounts, products, and projects
 
-The `@startup/*` package names and the local database credentials are safe to keep.
+The `@startup/*` package names and the local database credentials are intentional template defaults and are safe to keep.
 
 See [docs/template-checklist.md](docs/template-checklist.md) for the full list, including what must change before production.
+
+---
+
+Maintained by Allen.
