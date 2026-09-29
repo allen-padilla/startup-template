@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 concurrency:
   group: verify-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -16,6 +19,11 @@ jobs:
     runs-on: ubuntu-latest
 
     timeout-minutes: 15
+
+    env:
+      DATABASE_URL: postgresql://startup:startup@localhost:5432/startup
+      BETTER_AUTH_SECRET: ci-only-secret-that-is-long-enough-for-validation
+      BETTER_AUTH_URL: http://127.0.0.1:3000
 
     steps:
       - name: Checkout

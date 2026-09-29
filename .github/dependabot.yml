@@ -6,6 +6,11 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # The repository targets Node.js 24. Change this together with the Node.js version.
+      - dependency-name: "@types/node"
+        update-types:
+          - version-update:semver-major
     groups:
       minor-and-patch:
         update-types:
