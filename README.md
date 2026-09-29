@@ -133,8 +133,6 @@ Create your own repository from the template, either with **Use this template** 
 gh repo create my-app --template allen-padilla/startup-template --private --clone
 ```
 
-The template repository is private, so your GitHub account needs access to it.
-
 Then set up and start the application:
 
 ```bash
@@ -365,6 +363,7 @@ After creating a project from this template, replace these values first:
 
 - `.github/CODEOWNERS`: the owner is `@allen-padilla`, the template maintainer
 - `package.json`: `name`, `description`, `license`, and `author`
+- `LICENSE`: keep the template's notice and add your own license; see [License](#license)
 - this README: the title, the introduction, and the closing maintainer line
 - `apps/web/src/app/layout.tsx` and `page.tsx`: the application title, description, and landing page
 - `apps/web/src/app/favicon.ico`: the icon
@@ -373,6 +372,12 @@ After creating a project from this template, replace these values first:
 The `@startup/*` package names and the local database credentials are intentional template defaults and are safe to keep.
 
 See [docs/template-checklist.md](docs/template-checklist.md) for the full list, including what must change before production.
+
+## License
+
+The template is released under the [MIT License](LICENSE).
+
+You may use it for any project, open source or proprietary. Keep the template's copyright and permission notice in your project, and choose your own license for the code you add.
 
 ---
 
