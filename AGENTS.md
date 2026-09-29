@@ -51,6 +51,14 @@ Before making structural or cross-package changes, consult the relevant architec
 
 Packages must not depend on applications.
 
+## Secrets and Environment Variables
+
+- Never commit secrets, credentials, tokens, or private keys.
+- `.env.example` documents supported environment variables and must contain placeholders only.
+- Local secrets belong in ignored environment files such as `.env.local`.
+- Application code should use the repository's validated environment modules instead of reading `process.env` throughout the codebase.
+- Never weaken environment validation merely to make a build pass.
+
 <!-- BEGIN:turborepo-agent-rules -->
 
 # This is NOT the Turborepo you know
