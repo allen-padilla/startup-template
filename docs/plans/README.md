@@ -21,3 +21,16 @@ Plans are written only when explicitly requested; otherwise agents return plans 
 - Verification
 
 Omit sections that do not apply rather than leaving them empty.
+
+## Ownership
+
+Larger or concurrent tasks may add an optional `Ownership` section, so parallel tasks can check for overlap:
+
+- Branch:
+- Worktree:
+- Primary owner:
+- Expected files:
+- Shared hotspots:
+- Coordination notes:
+
+Trivial fixes do not need it. See `docs/architecture/parallel-development.md`.

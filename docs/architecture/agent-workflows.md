@@ -26,6 +26,7 @@ Current skills:
 - `add-api-route` — Next.js route handlers in `apps/web`
 - `add-environment-variable` — server and browser environment variables
 - `add-package` — `@startup/*` workspace packages
+- `worktree-task` — tasks in a Git worktree and parallel agent work
 
 ### `.agents/commands/`
 
@@ -104,6 +105,12 @@ A small, well-scoped change may skip a saved spec and plan, but not verification
 2. Implement
 3. Verify
 4. Review the diff
+
+## Parallel Work
+
+When several tasks run at the same time, each task uses its own branch and Git worktree, with one primary owner, and follows the `worktree-task` skill. The main checkout stays on `main` and coordinates. See `parallel-development.md`.
+
+When no parallel work is active, the substantial and small task flows above can run in the current checkout.
 
 ## Verification
 

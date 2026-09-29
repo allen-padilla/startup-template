@@ -47,7 +47,7 @@ The current E2E suite includes smoke coverage for:
 
 Playwright runs against a production-style Next.js server for more deterministic testing.
 
-`pnpm test:e2e` builds `@startup/web` first, then Playwright starts `scripts/start-e2e-server.sh`, which `exec`s `next start` on `127.0.0.1:3000`. Playwright never reuses an existing server and stops the server when the run finishes.
+`pnpm test:e2e` builds `@startup/web` first, then Playwright starts `scripts/start-e2e-server.sh`, which `exec`s `next start` on `127.0.0.1:3000`. Playwright never reuses an existing server and stops the server when the run finishes. Because the port is fixed, only one worktree at a time may run E2E tests. See `parallel-development.md`.
 
 The build validates the required server environment (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`), so `.env.local` must be configured before running E2E tests locally. CI sets disposable values in the workflow instead. See `continuous-integration.md`.
 
