@@ -23,7 +23,7 @@ Domain logic belongs in the owning `@startup/*` package, exposed through that pa
 
 ## Procedure
 
-1. Read the existing route handlers above and the architecture docs for the affected domain (`authentication.md`, `billing.md`, `database.md`, `package-boundaries.md`).
+1. Read the existing route handlers above and the architecture docs for the affected domain in `docs/architecture/` (`authentication.md`, `billing.md`, `database.md`, `package-boundaries.md`).
 
 2. Decide the route path and HTTP methods. Export one function per method (`GET`, `POST`, ...) from `route.ts`.
 

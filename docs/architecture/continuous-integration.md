@@ -187,7 +187,7 @@ Recommended protection for `main`:
 
 Do not require approvals or code-owner review while the repository has a single maintainer. GitHub does not let authors approve their own pull requests, so either setting would block every merge. Add a review requirement once there is a second maintainer.
 
-`.github/CODEOWNERS` still records ownership and requests review from the owner automatically. It lists `@allen-padilla`. Projects created from this template must replace that entry with their own user or team.
+`.github/CODEOWNERS` still records ownership and requests review from the owner automatically. It lists `@allen-padilla`. Projects created from this template must replace that entry with their own user or team. See `docs/template-checklist.md`.
 
 Branch protection and rulesets are configured in GitHub repository settings, not in this repository. They are not available for private repositories on the GitHub Free plan: the API returns `403 Upgrade to GitHub Pro or make this repository public`. Until the plan or repository visibility changes, CI is advisory. The checks run and report on every pull request, but GitHub does not block merging when they fail. Do not merge a pull request with failing or pending checks.
 

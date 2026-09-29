@@ -6,6 +6,19 @@ The application uses PostgreSQL with Drizzle ORM.
 
 Local PostgreSQL runs through Docker Compose.
 
+## Local Database
+
+`compose.yaml` defines the local PostgreSQL service. Run these commands from the repository root:
+
+- `pnpm db:up` starts the database on `localhost:5432` and waits until it accepts connections.
+- `pnpm db:down` stops and removes the container. The data volume is kept.
+- `pnpm db:logs` follows the database logs.
+- `pnpm db:studio` opens Drizzle Studio.
+
+`pnpm db:up` waits for the container's health check. A new database takes a few seconds to initialize, and `pnpm db:migrate` fails if it runs before the database is ready.
+
+The database tooling reads `DATABASE_URL` from the shell environment first, then from the root `.env.local`.
+
 ## Package
 
 Database code lives in:
