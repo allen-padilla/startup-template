@@ -54,7 +54,7 @@ Repository settings are not part of the template.
   4. Run `pnpm verify:full`.
 - [ ] **Plan name**: the billing code assumes one paid plan, "Pro monthly". Renaming `STRIPE_PRICE_PRO_MONTHLY` or adding plans is a code change. Follow the `add-environment-variable` skill and `docs/architecture/billing.md`.
 - [ ] **Checkout paths in documentation**: `docs/architecture/parallel-development.md` uses `~/dev/startup-template` for the main checkout and `~/dev/worktrees/startup-template-<task>` for worktrees. Update them to match where your project lives.
-- [ ] **Agent adapters**: `CLAUDE.md` points Claude Code to `AGENTS.md`. Add an equally thin adapter for any other tool your team uses.
+- [ ] **Agent adapters**: `CLAUDE.md` points Claude Code to `AGENTS.md`. Add an equally thin adapter for any other tool your team uses, and list it in `ADAPTERS` in `scripts/check-agent-harness.mjs`. `pnpm agent:check` checks only the adapters in that list.
 
 ## Safe to Keep
 

@@ -203,7 +203,9 @@ Current skills: `database-migration`, `add-api-route`, `add-environment-variable
 
 Agents verify their work with `pnpm verify` and do not commit unless asked.
 
-`CLAUDE.md` is a thin adapter that points to `AGENTS.md`. Add adapters for other tools the same way, and keep the rules themselves in `AGENTS.md` and `.agents/`.
+`pnpm agent:check` checks the structure of the harness itself, such as skill frontmatter and the repository paths the documentation refers to. It runs as the first step of `pnpm verify`.
+
+`CLAUDE.md` is a thin adapter that points to `AGENTS.md`. Add adapters for other tools the same way, and keep the rules themselves in `AGENTS.md` and `.agents/`. List each new adapter in `ADAPTERS` in `scripts/check-agent-harness.mjs`, so the check covers it.
 
 See [docs/architecture/agent-workflows.md](docs/architecture/agent-workflows.md).
 
