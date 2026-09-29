@@ -69,10 +69,52 @@ Dependabot (`.github/dependabot.yml`) discovers routine updates. It opens pull r
 - Minor and patch npm updates arrive grouped in one pull request.
 - Major updates arrive as separate pull requests. Review each as a breaking change: read the changelog, and run `pnpm verify:full`.
 - `@types/node` major updates are ignored. Change that rule together with the Node.js version.
+- `eslint` major updates are ignored. ESLint 10 removed APIs that plugins bundled by `eslint-config-next` still call, so `pnpm lint` fails. Remove the rule when `eslint-plugin-react`, `eslint-plugin-import`, and `eslint-plugin-jsx-a11y` support ESLint 10.
+- `typescript` 7 and later is ignored. TypeScript 7.0 has no JavaScript API, which `typescript-eslint` requires, so `pnpm lint` fails. Remove the rule when `typescript-eslint` supports TypeScript 7. TypeScript 6 is not ignored.
+
+An ignore rule is temporary. Each one states its removal condition in `.github/dependabot.yml`. Check those conditions when reviewing dependency updates. See Held Upgrades for the `eslint` and `typescript` rules.
 
 Do not combine a major upgrade with feature work. Give it its own branch and pull request.
 
 Update pull requests go through the same checks as any other change. Do not merge one with failing or pending checks.
+
+## Held Upgrades
+
+Two major upgrades are held because the lint setup does not support them yet. Both were last checked on 2026-09-29.
+
+| Dependency   | Held at | Blocked by                                                              | Release condition                                  |
+| ------------ | ------- | ----------------------------------------------------------------------- | -------------------------------------------------- |
+| `eslint`     | 9.x     | `eslint-plugin-react`, `eslint-plugin-import`, `eslint-plugin-jsx-a11y` | each declares ESLint 10 in its `eslint` peer range |
+| `typescript` | below 7 | `typescript-eslint`                                                     | its `typescript` peer range includes 7.x           |
+
+A hold ends only when the installed dependency graph is clean:
+
+- `pnpm peers check` reports no issues.
+- No `--force`, peer dependency override, or pnpm peer rule hides an unsupported peer range.
+- No rule is disabled, and lint coverage is not reduced, to make the upgrade pass.
+
+When a release condition is met, upgrade in its own branch, run `pnpm verify:full`, and remove the matching ignore rule from `.github/dependabot.yml` in the same change.
+
+### ESLint 10
+
+ESLint 9 reached end of life on 2026-08-06. End this hold as soon as its release condition is met.
+
+`eslint-config-next` bundles the three blocking plugins. Their latest releases accept ESLint 9 at most: `eslint-plugin-react` 7.37.5, `eslint-plugin-import` 2.32.0, and `eslint-plugin-jsx-a11y` 6.10.2. `eslint-config-next` 16.3.7 and 16.4.0-canary.52 depend on the same releases.
+
+With ESLint 10 installed:
+
+- `pnpm lint` crashes. While detecting the React version, `eslint-plugin-react` calls `context.getFilename()`, which ESLint 10 removed.
+- Setting `settings.react.version` explicitly avoids that crash, and the default rule set then reports the same findings as under ESLint 9. It is not an accepted fix. `pnpm peers check` still reports three unmet peers, and these `eslint-plugin-react` rules still crash when enabled: `react/jsx-filename-extension`, `react/forward-ref-uses-ref`, `react/jsx-curly-spacing`, `react/jsx-tag-spacing`, and `react/jsx-equals-spacing`.
+
+### TypeScript 7
+
+TypeScript 7.0 has no JavaScript API. `typescript-eslint` needs one and refuses to load, so `pnpm lint` fails. Its latest release, 8.71.0, accepts `typescript` below 6.1.
+
+Type checking, `next build`, and the tests pass on TypeScript 7. Only linting blocks the upgrade.
+
+Do not install TypeScript 6 and TypeScript 7 side by side to work around this. `next build` runs the compiler from the package named `typescript`, so it would type-check with TypeScript 6 while `pnpm typecheck` used TypeScript 7.
+
+When upgrading, set `target` and `lib` explicitly in `packages/typescript-config/base.json`. Both are unset there, and TypeScript 7 changes their defaults.
 
 ## Install Scripts
 

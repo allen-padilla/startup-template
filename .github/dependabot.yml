@@ -11,6 +11,17 @@ updates:
       - dependency-name: "@types/node"
         update-types:
           - version-update:semver-major
+      # ESLint 10 removed APIs that plugins bundled by eslint-config-next still call.
+      # ESLint 9 is end-of-life, so remove this as soon as eslint-plugin-react,
+      # eslint-plugin-import, and eslint-plugin-jsx-a11y declare ESLint 10 support.
+      - dependency-name: "eslint"
+        update-types:
+          - version-update:semver-major
+      # TypeScript 7.0 has no JavaScript API, which typescript-eslint requires.
+      # Remove when typescript-eslint supports TypeScript 7. TypeScript 6 is not ignored.
+      - dependency-name: "typescript"
+        versions:
+          - ">=7"
     groups:
       minor-and-patch:
         update-types:
