@@ -8,6 +8,13 @@
       "when": 1790663508406,
       "tag": "0000_bizarre_baron_strucker",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790664835214,
+      "tag": "0001_public_cobalt_man",
+      "breakpoints": true
     }
   ]
 }
