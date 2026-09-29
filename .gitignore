@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Builds
+.next/
+dist/
+.turbo/
+coverage/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+
+# Playwright
+playwright-report/
+test-results/
