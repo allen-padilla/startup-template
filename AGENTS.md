@@ -206,6 +206,29 @@ Current important skill:
 
 - `database-migration` — safe Drizzle/PostgreSQL schema changes
 
+## Agent Workflows
+
+Repository-specific agent workflows live in `.agents/`.
+
+- `.agents/rules/` contains detailed repository rules.
+- `.agents/skills/` contains repeatable procedural workflows.
+- `.agents/commands/` contains standard task workflows.
+- `.agents/agents/` contains specialized agent roles.
+
+For substantial tasks, prefer:
+
+1. understand
+2. plan
+3. implement
+4. verify
+5. review
+
+Feature behavior may be specified in `docs/specs/`.
+
+Implementation plans may be stored in `docs/plans/`.
+
+Do not duplicate detailed procedures into `AGENTS.md`.
+
 <!-- BEGIN:turborepo-agent-rules -->
 
 # This is NOT the Turborepo you know
