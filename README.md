@@ -177,7 +177,7 @@ See [docs/architecture/testing.md](docs/architecture/testing.md).
 ## Verification
 
 ```bash
-pnpm verify        # lint, typecheck, tests, production build
+pnpm verify        # agent harness check, lint, typecheck, tests, production build
 pnpm verify:full   # pnpm verify, then the end-to-end tests
 ```
 

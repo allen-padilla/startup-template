@@ -52,6 +52,7 @@ The canonical fast local correctness check is:
 
 It currently covers:
 
+- agent harness structure (`pnpm agent:check`)
 - lint
 - type checking
 - fast automated tests

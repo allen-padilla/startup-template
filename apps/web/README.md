@@ -8,7 +8,7 @@ Run commands from the repository root with pnpm:
 pnpm db:up      # start local PostgreSQL
 pnpm db:migrate # apply database migrations
 pnpm dev        # start the development server on http://localhost:3000
-pnpm verify     # lint, typecheck, test, build
+pnpm verify     # agent harness check, lint, typecheck, test, build
 ```
 
 Environment variables are loaded from the repository root `.env.local`. See `.env.example` and `docs/architecture/`.
