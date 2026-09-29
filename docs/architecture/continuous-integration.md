@@ -195,7 +195,7 @@ Do not claim protection is configured without checking the repository settings. 
 
 Required checks match on the job's `name`. Renaming a job breaks the required check, and pull requests then wait on a check that never reports. Update branch protection in the same change as any rename.
 
-Dependabot (`.github/dependabot.yml`) opens weekly npm and GitHub Actions update pull requests. They go through the same checks as any other pull request. Minor and patch npm updates are grouped. Major updates open individually, so they can be reviewed as breaking changes. `@types/node` major updates are ignored, because the repository targets Node.js 24. Change that ignore rule together with the Node.js version.
+Dependabot (`.github/dependabot.yml`) opens weekly npm and GitHub Actions update pull requests. They go through the same checks as any other pull request. Minor and patch npm updates are grouped. Major updates open individually, so they can be reviewed as breaking changes. `@types/node` major updates are ignored, because the repository targets Node.js 24. Change that ignore rule together with the Node.js version. `eslint` major updates and `typescript` 7 and later are also ignored, because `pnpm lint` fails on them until the linting plugins add support. See `dependencies.md` for the removal conditions.
 
 ## Known Gaps
 
