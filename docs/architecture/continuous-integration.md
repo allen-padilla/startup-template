@@ -34,7 +34,7 @@ Timeout: 15 minutes.
 2. Installs Playwright Chromium.
 3. Applies database migrations with `pnpm db:migrate`.
 4. Runs `pnpm test:e2e`, which builds `@startup/web` and runs Playwright against a production-style server.
-5. Uploads the Playwright report on failure.
+5. Uploads the Playwright report and test results on failure.
 
 Timeout: 20 minutes.
 
@@ -45,12 +45,15 @@ Both jobs:
 - use Node.js 24 on `ubuntu-latest`
 - enable Corepack, so pnpm resolves to the version pinned in `package.json`
 - install with `pnpm install --frozen-lockfile`
+- grant the `GITHUB_TOKEN` only `contents: read`
+
+Keep workflow permissions least-privilege. Grant additional scopes per job, only when a step needs them.
 
 `--frozen-lockfile` fails the job if `pnpm-lock.yaml` is out of date. Commit lockfile changes together with the `package.json` changes that require them.
 
 ## Required Checks
 
-Pull requests into `main` must pass:
+Pull requests into `main` must pass these checks before merging. GitHub enforces this only when branch protection is available. See Branch Protection.
 
 | Check                          | Workflow | Local equivalent                  |
 | ------------------------------ | -------- | --------------------------------- |
@@ -81,7 +84,7 @@ The credentials match the local Docker Compose database in `compose.yaml` and `.
 
 The database is ephemeral. Each run starts empty and is discarded when the job ends. Tests must not depend on data from a previous run.
 
-Only the E2E job has a database. `pnpm verify` must not require a running database.
+Only the E2E job has a database. `pnpm verify` must not require a running database. The Verify job sets `DATABASE_URL` only to satisfy build-time environment validation, and no database listens there.
 
 ## CI Environment Values
 
@@ -153,38 +156,49 @@ The Drizzle configuration reads `DATABASE_URL` from the job environment because 
 
 ## Playwright Artifacts
 
-When the E2E job fails, it uploads the `playwright-report/` directory:
+When the E2E job fails, it uploads one artifact:
 
-- artifact name: `playwright-report`
+- artifact name: `playwright-results`
+- contents: `playwright-report/` (HTML report) and `test-results/` (traces, screenshots, error context)
 - retention: 7 days
 - not uploaded when the job succeeds
+- a missing directory is ignored (`if-no-files-found: ignore`), so a failure before Playwright runs does not add an upload error
 
-Download it from the failed workflow run's summary page and open `index.html` locally, or run `pnpm exec playwright show-report <directory>`.
+On CI, `playwright.config.ts` uses the `list` reporter for readable logs and the `html` reporter (`open: "never"`) to write `playwright-report/`. Local runs keep Playwright's default `list` reporter.
 
 Playwright records a trace on the first retry of a failing test (`trace: "on-first-retry"`). Traces are written under `test-results/`.
+
+Download the artifact from the failed workflow run's summary page, then run `pnpm exec playwright show-report <path>/playwright-report` or `pnpm exec playwright show-trace <path>/test-results/<test>/trace.zip`.
+
+Artifacts can contain request data captured in traces. CI uses only disposable values, so they contain no real credentials. Keep it that way.
 
 `playwright-report/` and `test-results/` are gitignored. Never commit them.
 
 ## Branch Protection
 
-`main` is the protected integration branch. Expected settings:
+`main` is the canonical default branch and the integration branch. Pull requests target `main`.
+
+Recommended protection for `main`:
 
 - require a pull request before merging
 - require the `Lint, Typecheck, Test, Build` and `Playwright` status checks to pass
 - require branches to be up to date before merging
-- require review from code owners (`.github/CODEOWNERS`)
 - block force pushes and branch deletion
-- apply the rules to administrators
 
-Branch protection is configured in GitHub repository settings, not in this repository. Treat it as part of CI and keep it in sync with the workflows.
+Do not require approvals or code-owner review while the repository has a single maintainer. GitHub does not let authors approve their own pull requests, so either setting would block every merge. Add a review requirement once there is a second maintainer.
 
-Required checks match on job name. Renaming a job, or the workflow that contains it, breaks the required check. A pull request then waits on a check that never reports. Update branch protection in the same change as any rename.
+`.github/CODEOWNERS` still records ownership and requests review from the owner automatically. It lists `@allen-padilla`. Projects created from this template must replace that entry with their own user or team.
 
-Dependabot (`.github/dependabot.yml`) opens weekly npm and GitHub Actions update pull requests. They go through the same required checks and review as any other pull request.
+Branch protection and rulesets are configured in GitHub repository settings, not in this repository. They are not available for private repositories on the GitHub Free plan: the API returns `403 Upgrade to GitHub Pro or make this repository public`. Until the plan or repository visibility changes, CI is advisory. The checks run and report on every pull request, but GitHub does not block merging when they fail. Do not merge a pull request with failing or pending checks.
+
+Do not claim protection is configured without checking the repository settings. When it becomes available, configure it as listed above.
+
+Required checks match on the job's `name`. Renaming a job breaks the required check, and pull requests then wait on a check that never reports. Update branch protection in the same change as any rename.
+
+Dependabot (`.github/dependabot.yml`) opens weekly npm and GitHub Actions update pull requests. They go through the same checks as any other pull request. Minor and patch npm updates are grouped. Major updates open individually, so they can be reviewed as breaking changes. `@types/node` major updates are ignored, because the repository targets Node.js 24. Change that ignore rule together with the Node.js version.
 
 ## Known Gaps
 
-- `verify.yml` does not set the required server environment values, so `pnpm verify` fails at the production build in CI. It needs the same `env` block as `e2e.yml`.
-- `playwright.config.ts` does not configure a reporter. On CI, Playwright defaults to the `dot` reporter, so `playwright-report/` is not generated and the failure upload finds no files. `test-results/`, which holds traces, is not uploaded.
+- CI does not detect a schema change that is missing its generated migration. See Migration Behavior.
 
 Remove each item once it is fixed.
