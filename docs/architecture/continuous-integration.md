@@ -22,7 +22,7 @@ A newer run on the same ref cancels an in-progress run (`concurrency` with `canc
 
 `.github/workflows/verify.yml`, job `Lint, Typecheck, Test, Build`.
 
-Runs `pnpm verify`: lint, type checking, fast automated tests, and a production build.
+Runs `pnpm verify`: the agent harness check, lint, type checking, fast automated tests, and a production build.
 
 Timeout: 15 minutes.
 
