@@ -78,6 +78,24 @@ See `docs/architecture/dependencies.md`.
 - `pnpm verify` is required before considering implementation complete.
 - Also run `pnpm verify:full` for changes affecting significant application behavior or complete user workflows, including authentication, billing, routing, and other cross-system or user-facing behavior. Documentation-only changes do not require it.
 
+## Durable Knowledge
+
+When implementation reveals a reusable, repository-specific constraint, procedure, failure mode, or architectural fact, record it in the narrowest durable location that fits. Do not leave it only in the conversation or in a temporary plan.
+
+- Reusable task procedure: `.agents/skills/`
+- Cross-cutting repository invariant: `.agents/rules/repository.md`
+- Long-lived architecture or rationale: `docs/architecture/`
+- Desired product behavior: `docs/specs/`
+- Task-specific implementation approach: `docs/plans/`
+- Mechanically enforceable behavior: code, types, tests, lint rules, or CI, in preference to more prose
+
+Limits:
+
+- Do not document every incidental discovery.
+- Do not duplicate existing guidance. Correct the existing source instead of creating another one.
+- Information that is obvious from the code usually does not need prose.
+- Do not use task plans as a permanent store for architectural knowledge.
+
 ## Completion
 
 Before reporting completion:

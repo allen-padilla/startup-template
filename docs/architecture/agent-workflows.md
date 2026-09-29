@@ -57,6 +57,22 @@ Long-lived system design and boundaries. Architecture docs describe how the syst
 
 Tests, type checking, lint, the production build, and end-to-end tests are the mechanical truth. A passing check outranks a prose claim, and a prose claim that contradicts a failing check is wrong.
 
+### `pnpm agent:check`
+
+`scripts/check-agent-harness.mjs` checks the structure of the harness itself. It runs first in `pnpm verify`, so a structurally broken harness fails verification locally and in CI.
+
+It checks mechanical facts only:
+
+- `AGENTS.md`, `.agents/rules/repository.md`, `docs/architecture/`, `docs/specs/`, and `docs/plans/` exist
+- every directory in `.agents/skills/` has a non-empty `SKILL.md` whose frontmatter has a `description` and a `name` equal to the directory name
+- every Markdown file in `.agents/commands/` and `.agents/agents/` is non-empty
+- `CLAUDE.md` points to `AGENTS.md` and stays a few lines long
+- repository paths written in the harness documentation exist
+
+The reference check reads inline code and Markdown links in `AGENTS.md`, `CLAUDE.md`, `.agents/`, this document, and the `README.md` files in `docs/specs/` and `docs/plans/`. It checks a path only when the whole reference is one path. It skips commands, fenced code blocks, tool-managed sections, external URLs, and ignored or generated paths such as `.env.local`. For a placeholder or glob such as `docs/specs/<feature-name>.md`, it checks the directories before the placeholder.
+
+It does not judge whether guidance is correct or complete. That remains a review task.
+
 ## Precedence
 
 When guidance conflicts, apply this order, highest first:
@@ -112,9 +128,20 @@ When several tasks run at the same time, each task uses its own branch and Git w
 
 When no parallel work is active, the substantial and small task flows above can run in the current checkout.
 
+## Durable Learning
+
+Work on the repository produces knowledge that later tasks need. The loop is:
+
+1. Implement.
+2. Notice reusable, repository-specific knowledge: a constraint, a procedure, a failure mode, or an architectural fact.
+3. Record it in the narrowest durable source that fits.
+4. Enforce it mechanically when practical, in preference to more prose.
+
+The Durable Knowledge section of `.agents/rules/repository.md` says which source fits which kind of knowledge, and when not to document at all.
+
 ## Verification
 
-`pnpm verify` is required before considering implementation complete. It runs lint, type checking, fast automated tests, and the production build.
+`pnpm verify` is required before considering implementation complete. It runs the agent harness check, lint, type checking, fast automated tests, and the production build.
 
 Also run `pnpm verify:full` for changes affecting significant application behavior or complete user workflows, including authentication, billing, routing, and other cross-system or user-facing behavior. It adds Playwright end-to-end tests.
 
