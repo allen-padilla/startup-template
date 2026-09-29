@@ -17,7 +17,7 @@
     "db:studio": "pnpm --filter @startup/db db:studio",
     "test": "turbo test",
     "test:run": "turbo test -- --run",
-    "test:e2e": "playwright test",
+    "test:e2e": "pnpm --filter @startup/web build && playwright test",
     "test:e2e:ui": "playwright test --ui",
     "verify:full": "pnpm verify && pnpm test:e2e"
   },

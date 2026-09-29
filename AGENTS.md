@@ -10,6 +10,8 @@ Reusable production-oriented startup application template.
 - `packages/` — shared packages
 - `docs/` — product and engineering documentation
 - `scripts/` — repository automation
+- `tests/` — cross-application and end-to-end tests
+- `.agents/` — repository-specific agent skills and workflows
 
 ## Package Manager
 
@@ -17,31 +19,51 @@ Use pnpm.
 
 Do not use npm or yarn for dependency management.
 
+Run workspace commands from the repository root unless a task specifically requires a package-local command.
+
 ## Development
 
 Node.js 24 is required.
+
+Source repositories live inside the WSL/Linux filesystem.
 
 ## Agent Guidelines
 
 Before making changes:
 
 1. Understand the relevant existing code.
-2. Prefer existing patterns over introducing new ones.
-3. Keep changes scoped to the requested task.
-4. Do not introduce dependencies without a concrete reason.
-5. Verify your work before considering the task complete.
+2. Read relevant architecture documentation before structural or cross-package changes.
+3. Prefer existing patterns over introducing new ones.
+4. Keep changes scoped to the requested task.
+5. Do not introduce dependencies without a concrete reason.
+6. Do not weaken validation, tests, security constraints, or architecture rules merely to make a task pass.
+7. Verify your work before considering the task complete.
+8. Review the resulting diff for accidental or unrelated changes.
 
-More specific instructions will be added as the repository evolves.
+Do not commit changes unless the task explicitly requests a commit.
 
 ## Verification
 
-Before considering implementation complete, run:
+The canonical fast local correctness check is:
 
 `pnpm verify`
 
-The verification command is the repository's canonical local correctness check.
+It currently covers:
+
+- lint
+- type checking
+- fast automated tests
+- production build
+
+Before considering implementation complete, run `pnpm verify`.
 
 Do not claim a change is complete if verification fails.
+
+For significant user-facing, authentication, billing, routing, or workflow changes, also run:
+
+`pnpm verify:full`
+
+This adds end-to-end browser testing.
 
 ## Architecture
 
@@ -49,25 +71,127 @@ Architecture documentation lives in `docs/architecture/`.
 
 Before making structural or cross-package changes, consult the relevant architecture documentation.
 
+Applications may depend on packages.
+
 Packages must not depend on applications.
+
+Prefer intentional package public APIs over imports from another package's internal source paths.
+
+## Server and Client Boundaries
+
+Server-only code may access:
+
+- database connections
+- server-only environment variables
+- credentials and secrets
+- privileged request/session state
+
+Client code must not import server-only modules.
+
+Any `NEXT_PUBLIC_*` environment variable is browser-visible and must be treated as public.
+
+Do not move server code into client components merely to make an import work.
 
 ## Secrets and Environment Variables
 
 - Never commit secrets, credentials, tokens, or private keys.
-- `.env.example` documents supported environment variables and must contain placeholders only.
+- `.env.example` documents supported environment variables and must contain placeholders or safe local examples only.
 - Local secrets belong in ignored environment files such as `.env.local`.
-- Application code should use the repository's validated environment modules instead of reading `process.env` throughout the codebase.
+- Application code should use the repository's validated environment modules instead of scattering direct `process.env` access.
 - Never weaken environment validation merely to make a build pass.
+- Never print or expose secret values during debugging.
+
+## Authentication
+
+Authentication code lives in `packages/auth`.
+
+Server authentication is exposed through the server auth package.
+
+Browser-safe authentication code must use the client auth entry point.
+
+Client components must not import:
+
+- server auth configuration
+- database code
+- server-only environment modules
+- secret-bearing modules
+
+Authentication schema changes must use the database migration workflow.
 
 ## Database
 
 Database code lives in `packages/db`.
+
+Schema definitions live in `packages/db/src/schema/`.
 
 Schema changes must use the database migration workflow.
 
 For schema changes, use the `database-migration` skill.
 
 Generated migrations must be reviewed before they are applied.
+
+Inspect generated SQL for:
+
+- destructive operations
+- accidental drops
+- unsafe renames
+- missing constraints
+- data-loss implications
+
+Never run destructive production database operations unless the task explicitly authorizes a reviewed production procedure.
+
+## Testing
+
+Vitest is used for fast unit and integration-level tests.
+
+Playwright is used for end-to-end browser testing.
+
+Prefer tests that validate externally meaningful behavior rather than implementation details.
+
+Do not delete, skip, or weaken tests merely to make a change pass.
+
+Use `pnpm verify:full` for significant changes affecting complete user workflows.
+
+## Observability
+
+Sentry is used for runtime error and performance monitoring.
+
+PostHog is used for product analytics and feature flags.
+
+Observability must remain optional for local development.
+
+Do not send:
+
+- secrets
+- credentials
+- raw auth tokens
+- unnecessary personal data
+
+to observability systems.
+
+Use stable authenticated user IDs when identifying users in analytics.
+
+## Generated and Tool-Managed Files
+
+Do not manually edit generated files or tool-managed sections unless the task specifically requires it.
+
+Examples include:
+
+- generated Drizzle migration metadata
+- tool-managed blocks inside `AGENTS.md`
+- generated framework files
+
+When a tool owns a marked section, preserve the section boundaries.
+
+## Skills
+
+Repository-specific procedural workflows live in `.agents/skills/`.
+
+Use a skill when the task matches that workflow instead of improvising a new process.
+
+Current important skill:
+
+- `database-migration` — safe Drizzle/PostgreSQL schema changes
 
 <!-- BEGIN:turborepo-agent-rules -->
 

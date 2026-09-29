@@ -20,10 +20,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command:
-      "pnpm --filter @startup/web build && pnpm --filter @startup/web start --hostname 127.0.0.1",
+    command: "./scripts/start-e2e-server.sh",
     url: "http://127.0.0.1:3000",
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 180_000,
   },
 });

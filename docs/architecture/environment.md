@@ -34,6 +34,8 @@ Only variables intentionally exposed to browser code may use the `NEXT_PUBLIC_` 
 
 Treat any `NEXT_PUBLIC_*` value as public information.
 
+Browser variables are validated by `@startup/env/client`. Client code must import from this entry point, never from `@startup/env`, which loads server-only configuration.
+
 ## Application Code
 
 Prefer validated environment modules over direct `process.env` access.
