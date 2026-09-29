@@ -71,6 +71,8 @@ It checks mechanical facts only:
 
 The reference check reads inline code and Markdown links in `AGENTS.md`, `CLAUDE.md`, `.agents/`, this document, and the `README.md` files in `docs/specs/` and `docs/plans/`. It checks a path only when the whole reference is one path. It skips commands, fenced code blocks, tool-managed sections, external URLs, and ignored or generated paths such as `.env.local`. For a placeholder or glob such as `docs/specs/<feature-name>.md`, it checks the directories before the placeholder.
 
+Only the adapters listed in `ADAPTERS` in the script are checked. When adding an adapter for another tool, add its file name to that list. An adapter that is not listed is not checked.
+
 It does not judge whether guidance is correct or complete. That remains a review task.
 
 ## Precedence
