@@ -16,6 +16,8 @@ It ships with the parts most products need on day one, already wired together an
 
 Every integration except the database and authentication is optional locally. The application builds and runs without Stripe, Sentry, or PostHog accounts.
 
+The template lives at [github.com/allen-padilla/startup-template](https://github.com/allen-padilla/startup-template) and is set up as a GitHub template repository.
+
 ## Stack
 
 | Area            | Technology                                    |
@@ -42,8 +44,17 @@ On Windows, work inside WSL and keep the repository on the Linux filesystem.
 
 ## Quick Start
 
+Create your own repository from the template, either with **Use this template** on the [repository page](https://github.com/allen-padilla/startup-template) or with the GitHub CLI:
+
 ```bash
-git clone <your-repository-url> my-app
+gh repo create my-app --template allen-padilla/startup-template --private --clone
+```
+
+The template repository is private, so your GitHub account needs access to it.
+
+Then set up and start the application:
+
+```bash
 cd my-app
 
 corepack enable
@@ -79,6 +90,7 @@ Both files live in the repository root. The application and the database tooling
 | Variable                                                        | Required | Visibility    | Purpose                                       |
 | --------------------------------------------------------------- | -------- | ------------- | --------------------------------------------- |
 | `DATABASE_URL`                                                  | yes      | server        | PostgreSQL connection string                  |
+| `NEXT_PUBLIC_APP_URL`                                           | no       | browser       | reserved; not yet read by the application     |
 | `BETTER_AUTH_SECRET`                                            | yes      | server secret | signs sessions; at least 32 characters        |
 | `BETTER_AUTH_URL`                                               | yes      | server        | base URL of the application                   |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`                    | no       | server secret | billing; use Stripe test mode locally         |
@@ -246,7 +258,7 @@ See [docs/architecture/dependencies.md](docs/architecture/dependencies.md).
 
 After creating a project from this template, replace these values first:
 
-- `.github/CODEOWNERS`: the owner is the template maintainer's GitHub account
+- `.github/CODEOWNERS`: the owner is `@allen-padilla`, the template maintainer
 - `package.json`: `name`, `description`, `license`, and `author`
 - this README: the title, the introduction, and the closing maintainer line
 - `apps/web/src/app/layout.tsx` and `page.tsx`: the application title, description, and landing page
