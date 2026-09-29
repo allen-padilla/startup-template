@@ -204,6 +204,18 @@ Desired feature behavior may be specified in `docs/specs/`. Implementation plans
 
 Keep detailed procedures in `.agents/`, not in `AGENTS.md`.
 
+## Continuous Integration
+
+GitHub Actions is the canonical remote verification environment.
+
+Pull requests must pass the required verification and E2E checks before merge.
+
+Do not modify CI to bypass failing repository checks.
+
+Keep local verification commands aligned with CI rather than duplicating different correctness rules in workflow YAML.
+
+See `docs/architecture/continuous-integration.md`.
+
 <!-- BEGIN:turborepo-agent-rules -->
 
 # This is NOT the Turborepo you know

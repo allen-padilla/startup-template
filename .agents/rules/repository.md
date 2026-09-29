@@ -87,3 +87,10 @@ Before reporting completion:
 5. Report what changed, verification results, and any remaining concerns.
 
 Do not commit unless explicitly requested.
+
+## CI
+
+- Do not weaken GitHub Actions or required checks to make a change pass.
+- Keep CI aligned with repository commands such as `pnpm verify` and `pnpm test:e2e`.
+- Never place production secrets directly in workflow files.
+- Use disposable test values and GitHub secrets only when necessary.
