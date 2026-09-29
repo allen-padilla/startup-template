@@ -15,16 +15,15 @@
   },
   "dependencies": {
     "@startup/env": "workspace:*",
-    "drizzle-orm": "latest",
-    "pg": "latest"
+    "drizzle-orm": "^0.45.3",
+    "pg": "^8.23.0"
   },
   "devDependencies": {
     "@startup/typescript-config": "workspace:*",
     "@types/node": "^24",
-    "@types/pg": "latest",
-    "dotenv": "latest",
-    "drizzle-kit": "latest",
-    "tsx": "latest",
+    "@types/pg": "^8.23.1",
+    "dotenv": "^18.0.4",
+    "drizzle-kit": "^0.31.11",
     "typescript": "^5"
   }
 }

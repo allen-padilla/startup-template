@@ -36,6 +36,8 @@ Treat any `NEXT_PUBLIC_*` value as public information.
 
 Browser variables are validated by `@startup/env/client`. Client code must import from this entry point, never from `@startup/env`, which loads server-only configuration.
 
+Optional browser variables treat an empty value (for example `NEXT_PUBLIC_SENTRY_DSN=`) as unset. Non-empty values must still be valid.
+
 ## Application Code
 
 Prefer validated environment modules over direct `process.env` access.

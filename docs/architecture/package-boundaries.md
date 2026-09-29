@@ -45,3 +45,31 @@ The package must not depend on application code.
 Consumers should import from the package's public API rather than internal source paths.
 
 Shared UI primitives belong here when they are reusable across application surfaces.
+### @startup/env
+
+Validated environment configuration.
+
+- `@startup/env` exports server-only configuration (`serverEnv`).
+- `@startup/env/client` exports browser-safe `NEXT_PUBLIC_*` configuration (`clientEnv`) and must not import server configuration.
+
+See `environment.md`.
+
+### @startup/db
+
+PostgreSQL access through Drizzle ORM: the shared connection (`db`) and schema.
+
+Server-only. Depends on `@startup/env`.
+
+See `database.md`.
+
+### @startup/auth
+
+Better Auth configuration.
+
+- `@startup/auth` exports the server auth instance and is server-only.
+- `@startup/auth/client` exports the browser-safe auth client.
+- `@startup/auth/next` exports the server-only Next.js route handler (`authHandler`).
+
+Depends on `@startup/db` and `@startup/env`.
+
+See `authentication.md`.

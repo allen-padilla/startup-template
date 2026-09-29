@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./client": "./src/client.ts"
+    "./client": "./src/client.ts",
+    "./next": "./src/next.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
@@ -13,8 +14,7 @@
   "dependencies": {
     "@startup/db": "workspace:*",
     "@startup/env": "workspace:*",
-    "better-auth": "latest",
-    "dotenv": "^18.0.4"
+    "better-auth": "^1.7.6"
   },
   "devDependencies": {
     "@startup/typescript-config": "workspace:*",

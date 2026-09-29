@@ -4,14 +4,13 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "env": [
+      "env": ["BETTER_AUTH_URL", "SENTRY_ORG", "SENTRY_PROJECT"],
+      "passThroughEnv": [
         "DATABASE_URL",
         "BETTER_AUTH_SECRET",
-        "BETTER_AUTH_URL",
-        "SENTRY_ORG",
-        "SENTRY_PROJECT"
+        "SENTRY_AUTH_TOKEN",
+        "CI"
       ],
-      "passThroughEnv": ["SENTRY_AUTH_TOKEN", "CI"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "dev": {

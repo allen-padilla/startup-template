@@ -28,6 +28,8 @@ Better Auth is mounted at:
 
 `/api/auth/[...all]`
 
+The route handler comes from `@startup/auth/next` (`authHandler`). Applications must not import `better-auth` directly; the auth package owns the Better Auth dependency.
+
 ## Database
 
 Authentication tables are defined in `@startup/db`.

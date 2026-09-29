@@ -1,8 +1,8 @@
 {
   "name": "startup-template",
   "version": "1.0.0",
+  "private": true,
   "description": "",
-  "main": "index.js",
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
@@ -35,7 +35,6 @@
   "type": "module",
   "devDependencies": {
     "@playwright/test": "^1.63.0",
-    "turbo": "^2.11.5",
-    "vitest": "^5.0.2"
+    "turbo": "^2.11.5"
   }
 }
