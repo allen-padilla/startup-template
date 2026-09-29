@@ -199,6 +199,7 @@ Current skills:
 - `add-api-route` — Next.js route handlers in `apps/web`
 - `add-environment-variable` — server and browser environment variables
 - `add-package` — `@startup/*` workspace packages
+- `worktree-task` — tasks in a Git worktree and parallel agent work
 
 Desired feature behavior may be specified in `docs/specs/`. Implementation plans may be saved in `docs/plans/` when requested.
 
@@ -215,6 +216,22 @@ Do not modify CI to bypass failing repository checks.
 Keep local verification commands aligned with CI rather than duplicating different correctness rules in workflow YAML.
 
 See `docs/architecture/continuous-integration.md`.
+
+## Parallel Development
+
+When several tasks run at the same time, each uses its own Git worktree:
+
+- one task, one branch, one worktree, one primary owner
+- worktrees live outside the repository, in `~/dev/worktrees/`
+- the main checkout stays on `main` and coordinates: updating, reviewing, merging, and cleaning up
+
+Small tasks with no parallel work may still follow the normal small-task flow in the main checkout.
+
+Avoid overlapping active changes to shared hotspots, such as root manifests, `pnpm-lock.yaml`, `AGENTS.md`, and database schema or migrations. Report overlap instead of racing.
+
+Only one active task may own database schema and migration changes at a time.
+
+Tasks integrate through pull requests. See `docs/architecture/parallel-development.md` and the `worktree-task` skill.
 
 <!-- BEGIN:turborepo-agent-rules -->
 

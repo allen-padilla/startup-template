@@ -19,6 +19,21 @@ Generated migrations live in:
 
 Do not hand-edit generated migration metadata unless the task specifically requires repairing migration state.
 
+## Parallel Work
+
+Only one active task or worktree may own schema and migration changes at a time.
+
+Before generating a migration:
+
+- check `git worktree list` and active plans for another task that changes `packages/db/src/schema/` or `packages/db/drizzle/`
+- if another task owns schema changes, stop and report the overlap
+
+Two branches that generate migrations from the same base collide on migration numbers and `meta/_journal.json`. If another migration branch must land first, rebase or merge onto the updated `main`, restore `packages/db/drizzle/` to the updated `main` version, and run `pnpm db:generate` again from the new base. Do not hand-merge migration files or journal entries. If the discarded migration was already applied to the local database, report it.
+
+All worktrees share the local PostgreSQL database. `pnpm db:migrate` changes it for every worktree, so do not run concurrent migrations against it.
+
+See `docs/architecture/parallel-development.md`.
+
 ## Procedure
 
 1. Understand the requested data-model change.

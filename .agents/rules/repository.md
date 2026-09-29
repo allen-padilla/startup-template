@@ -94,3 +94,19 @@ Do not commit unless explicitly requested.
 - Keep CI aligned with repository commands such as `pnpm verify` and `pnpm test:e2e`.
 - Never place production secrets directly in workflow files.
 - Use disposable test values and GitHub secrets only when necessary.
+
+## Parallel Work
+
+Follow the `worktree-task` skill. See `docs/architecture/parallel-development.md`.
+
+- When parallel work is active, each task has one branch, one worktree, and one primary owner.
+- The main checkout stays on `main` and coordinates: creating worktrees, reviewing branches, merging, and cleanup.
+- Small tasks with no parallel work may still follow the normal small-task flow in the main checkout.
+- Do not edit files outside the assigned task scope merely because they are nearby.
+- Before modifying a shared hotspot, check whether another active task owns it.
+- If two active tasks require the same files or schema, report the overlap instead of racing.
+- Only one active task may own schema and migration changes at a time.
+- `package.json` files and `pnpm-lock.yaml` are shared dependency hotspots. Regenerate the lockfile with `pnpm install` rather than hand-merging it.
+- With the current local infrastructure, database migrations and E2E runs (`pnpm test:e2e`, `pnpm verify:full`) are serialized across worktrees: they share the local database and port `3000`.
+- Do not merge another feature branch into your task branch unless explicitly instructed.
+- Integration happens through the normal PR workflow. Do not commit or merge unless explicitly requested.
