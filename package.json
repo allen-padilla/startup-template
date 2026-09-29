@@ -8,7 +8,13 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
-    "verify": "pnpm lint && pnpm typecheck && pnpm build"
+    "verify": "pnpm lint && pnpm typecheck && pnpm build",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f postgres",
+    "db:generate": "pnpm --filter @startup/db db:generate",
+    "db:migrate": "pnpm --filter @startup/db db:migrate",
+    "db:studio": "pnpm --filter @startup/db db:studio"
   },
   "keywords": [],
   "author": "",

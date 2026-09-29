@@ -59,6 +59,16 @@ Packages must not depend on applications.
 - Application code should use the repository's validated environment modules instead of reading `process.env` throughout the codebase.
 - Never weaken environment validation merely to make a build pass.
 
+## Database
+
+Database code lives in `packages/db`.
+
+Schema changes must use the database migration workflow.
+
+For schema changes, use the `database-migration` skill.
+
+Generated migrations must be reviewed before they are applied.
+
 <!-- BEGIN:turborepo-agent-rules -->
 
 # This is NOT the Turborepo you know
