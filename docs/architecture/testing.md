@@ -8,6 +8,7 @@ The canonical local verification command is:
 
 It runs:
 
+- agent harness check (`pnpm agent:check`, see `agent-workflows.md`)
 - lint
 - TypeScript type checking
 - fast automated tests
