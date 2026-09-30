@@ -16,6 +16,11 @@ const serverSchema = z.object({
   STRIPE_SECRET_KEY: optional(z.string().regex(/^(sk|rk)_(test|live)_/)),
   STRIPE_WEBHOOK_SECRET: optional(z.string().startsWith("whsec_")),
   STRIPE_PRICE_PRO_MONTHLY: optional(z.string().startsWith("price_")),
+
+  // Decision models are optional until a decision is evaluated.
+  // @startup/decision raises a configuration error when a value is missing.
+  TYPESAFE_API_KEY: optional(z.string().min(1)),
+  TYPESAFE_MODEL: optional(z.string().min(1)),
 });
 
 export const serverEnv = serverSchema.parse({
@@ -26,4 +31,6 @@ export const serverEnv = serverSchema.parse({
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
   STRIPE_PRICE_PRO_MONTHLY: process.env.STRIPE_PRICE_PRO_MONTHLY,
+  TYPESAFE_API_KEY: process.env.TYPESAFE_API_KEY,
+  TYPESAFE_MODEL: process.env.TYPESAFE_MODEL,
 });

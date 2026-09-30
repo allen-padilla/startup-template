@@ -60,6 +60,14 @@ See `docs/architecture/dependencies.md`.
 - Do not infer paid access from checkout redirects.
 - Verified webhook-synchronized state is authoritative.
 
+## Decision Models
+
+See `docs/architecture/decision-models.md`.
+
+- Use deterministic code for decisions that can be expressed reliably in code, `@startup/decision` for fuzzy but bounded decisions, and a generative model for open-ended reasoning or generation.
+- Only `@startup/decision` calls the TypeSafe API. `TYPESAFE_API_KEY` and `TYPESAFE_MODEL` are server-only.
+- Confidence thresholds are product policy. Keep them in the product code that owns the decision, not in `@startup/decision`.
+
 ## API Routes
 
 - Use the `add-api-route` skill for new or materially changed route handlers.
