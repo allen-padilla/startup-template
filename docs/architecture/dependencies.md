@@ -51,16 +51,18 @@ Import internal packages through their public `exports` entry points. See `packa
 
 Some dependencies must change together:
 
-| Dependencies                                 | Where                                   | Rule                                                        |
-| -------------------------------------------- | --------------------------------------- | ----------------------------------------------------------- |
-| `react`, `react-dom`                         | `apps/web`, `packages/ui`               | same exact version in both packages                         |
-| `react` peer range                           | `packages/ui` `peerDependencies`        | must include the version `apps/web` installs                |
-| `next`, `eslint-config-next`                 | `apps/web`                              | same exact version                                          |
-| `@types/react`, `@types/react-dom`           | `apps/web`, `packages/ui`               | same major version as React                                 |
-| `drizzle-orm`                                | `packages/db`, `packages/billing`       | same specifier                                              |
-| `@types/node`                                | every package that uses it              | major version matches the Node.js version in `.node-version` |
+| Dependencies                       | Where                                             | Rule                                                         |
+| ---------------------------------- | ------------------------------------------------- | ------------------------------------------------------------ |
+| `react`, `react-dom`               | `apps/web`, `packages/ui`, `packages/auth`        | same exact version in every package                          |
+| `react` peer range                 | `packages/ui`, `packages/auth` `peerDependencies` | must include the version `apps/web` installs                 |
+| `next`, `eslint-config-next`       | `apps/web`                                        | same exact version                                           |
+| `@types/react`, `@types/react-dom` | `apps/web`, `packages/ui`                         | same major version as React                                  |
+| `drizzle-orm`                      | `packages/db`, `packages/billing`                 | same specifier                                               |
+| `@types/node`                      | every package that uses it                        | major version matches the Node.js version in `.node-version` |
 
 React and Next.js are peers of each other. A Next.js release supports specific React versions, so check the supported range before upgrading either one.
+
+`packages/auth` pins React because `@startup/auth/client` uses `better-auth/react`. pnpm resolves `better-auth`'s React peer from `packages/auth`'s own dependencies, not from the app that imports it. Without the pin, the lockfile keeps a second, older React for `better-auth`.
 
 ## Upgrades
 
