@@ -82,3 +82,11 @@ Server-side Stripe integration: customer mapping, checkout, webhook verification
 Server-only. Owns the `stripe` dependency. Depends on `@startup/db` and `@startup/env`.
 
 See `billing.md`.
+
+### @startup/decision
+
+Bounded AI decisions (classification, routing, scoring, gating) through TypeSafe's System One API: `createDecisionClient`, typed questions and answers, and `Decision*` errors.
+
+Server-only. Depends on `@startup/env`. The only code that calls the TypeSafe API. No application currently depends on it.
+
+See `decision-models.md`.

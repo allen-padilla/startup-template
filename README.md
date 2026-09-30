@@ -235,6 +235,7 @@ Run commands from the repository root.
 | `packages/auth`              | Better Auth server and client (`@startup/auth`)    |
 | `packages/billing`           | Stripe integration (`@startup/billing`)            |
 | `packages/db`                | Drizzle schema and migrations (`@startup/db`)      |
+| `packages/decision`          | bounded AI decisions (`@startup/decision`)         |
 | `packages/env`               | validated environment variables (`@startup/env`)   |
 | `packages/ui`                | shared React components (`@startup/ui`)            |
 | `packages/typescript-config` | shared TypeScript configuration                    |
@@ -249,6 +250,7 @@ flowchart TD
   billing["@startup/billing"]
   ui["@startup/ui"]
   db["@startup/db"]
+  decision["@startup/decision"]
   env["@startup/env"]
 
   web --> auth
@@ -260,6 +262,7 @@ flowchart TD
   billing --> db
   billing --> env
   db --> env
+  decision --> env
 ```
 
 Arrows point from a package to what it depends on. Every package also uses `@startup/typescript-config`, which is left out to keep the graph readable.
