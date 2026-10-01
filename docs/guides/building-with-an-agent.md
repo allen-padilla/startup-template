@@ -1,6 +1,6 @@
 # Building a Product with an Agent
 
-This section walks one made-up product from an empty template to a shipped first version and then to new features, with a coding agent doing the work. Every step has a prompt you can copy.
+This guide walks one made-up product from an empty template to a shipped first version and then to new features, with a coding agent doing the work. Every step has a prompt you can copy.
 
 The prompts work with any agent that reads `AGENTS.md`, such as Claude Code, Codex, or Cursor. Replace the product name, the paths, and the idea with your own.
 
@@ -93,7 +93,7 @@ A successful run ends with:
 
 - a clone at `~/dev/feedbox` on `main`, with a clean `git status`
 - a gitignored `.env.local` containing a generated secret that nobody has seen
-- PostgreSQL running in Docker with the migrations applied
+- PostgreSQL and Mailpit running in Docker, with the migrations applied
 - `pnpm verify` passing
 
 If the agent stops on an error, these are the usual causes:
@@ -126,7 +126,8 @@ Follow docs/template-checklist.md, section "Replace Immediately":
 - README.md: title, introduction, clone command, and closing line
 - apps/web/src/app/layout.tsx: title and description
 - apps/web/src/app/page.tsx: a simple Feedbox landing page, one headline, one
-  sentence, and a "Get started" button
+  sentence, and the existing "Get Started" button to /sign-up
+- packages/email/src/templates/brand.ts: productName "Feedbox"
 - apps/web/README.md
 
 Keep the @startup/* package scope. Also update the checkout paths in
@@ -263,7 +264,7 @@ Check the plan for:
 - **Tests.** Unit tests for the logic, and at least one end-to-end test for the main path.
 - **Order.** Each slice builds and passes `pnpm verify` on its own.
 
-A reasonable slice order for Feedbox. Sign-up, sign-in, and the account page already exist, so no slice builds them:
+A reasonable slice order for Feedbox. Sign-up, sign-in, password reset, and the account page already exist, so no slice builds them:
 
 | Slice | Contents                                                                           | Skills                                       |
 | ----- | ---------------------------------------------------------------------------------- | -------------------------------------------- |
@@ -404,6 +405,8 @@ Run pnpm verify, then commit, push, and open a pull request.
 ```
 
 Only one active task may change the schema at a time. Other shared hotspots, such as `package.json`, `pnpm-lock.yaml`, and `.env.example`, need the same care. Merge one branch, then rebase the other on the new `main`.
+
+The digest puts text that visitors typed into an email, so its spec should send it only to owners whose address is verified. The template records verification but does not enforce it. See the Content section of [docs/architecture/email.md](../architecture/email.md#content).
 
 ### Example D: Fixing a Bug
 
