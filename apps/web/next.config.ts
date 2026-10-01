@@ -9,14 +9,27 @@ if (existsSync(localEnvFile)) {
   process.loadEnvFile(localEnvFile);
 }
 
+// Sent on every route. There is deliberately no script-src policy yet. See
+// docs/architecture/deployment.md.
+const securityHeaders = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Strict-Transport-Security", value: "max-age=63072000" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+];
+
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
 
-  // The reset page receives a token in its URL. Never send that URL to other
-  // sites as a referrer. See docs/architecture/observability.md.
+  // When two rules set the same header, the later one wins.
   async headers() {
     return [
+      { source: "/:path*", headers: securityHeaders },
+      // The reset page receives a token in its URL. Never send that URL to
+      // other sites as a referrer. See docs/architecture/observability.md.
       {
         source: "/reset-password",
         headers: [{ key: "Referrer-Policy", value: "no-referrer" }],

@@ -140,6 +140,25 @@ Authentication email is sent with Next.js `after()`, after the response. Vercel 
 
 See `authentication.md`.
 
+## Security Headers
+
+`apps/web/next.config.ts` sends these headers on every route, so they apply on any host that runs Next.js:
+
+| Header                      | Value                                          | Purpose |
+| --------------------------- | ---------------------------------------------- | ------- |
+| `X-Content-Type-Options`    | `nosniff`                                      | Browsers do not guess content types. |
+| `X-Frame-Options`           | `DENY`                                         | No other site can frame the application (older browsers). |
+| `Content-Security-Policy`   | `frame-ancestors 'none'`                       | The same for current browsers. |
+| `Referrer-Policy`           | `strict-origin-when-cross-origin`              | Other sites receive only the origin. `/reset-password` overrides it with `no-referrer`, because its URL carries a reset token (see `observability.md`). |
+| `Strict-Transport-Security` | `max-age=63072000`                             | Browsers use HTTPS for the next two years after each visit. Browsers ignore it over plain HTTP, so local development is unaffected. |
+| `Permissions-Policy`        | `camera=(), microphone=(), geolocation=()`     | The application and anything it embeds cannot use these. |
+
+When two rules match a path and set the same header, the later rule wins, so page-specific rules come after the `/:path*` rule.
+
+- Strict-Transport-Security has no `includeSubDomains` or `preload`. Add them only when every subdomain of the production domain serves HTTPS, because browsers keep the policy for its full `max-age`.
+- The Content-Security-Policy restricts only framing. There is no `script-src` policy yet: a useful one needs nonces or hashes for Next.js, Sentry, and PostHog scripts, which is a separate change.
+- A product that needs the camera, microphone, or location, or needs to be framed, changes these values in `next.config.ts`.
+
 ## Stripe
 
 Create the production webhook endpoint in the Stripe Dashboard, in live mode:
