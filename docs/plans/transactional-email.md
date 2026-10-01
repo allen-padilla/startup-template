@@ -11,6 +11,8 @@ Implement `docs/specs/transactional-email.md`:
 
 The work is split into slices. Each slice passes `pnpm verify` on its own and can be reviewed and merged separately.
 
+Status: implemented on `feat/transactional-email`, one commit per slice. `pnpm verify:full` passes. Where the implementation differs from the original plan, this document has been updated, and Implementation Notes lists the differences.
+
 ## Resolved Questions
 
 These were ambiguous in the spec or conflict with Better Auth 1.7.6. The answers below were agreed before planning and are recorded in the spec (Slice 0).
@@ -28,7 +30,7 @@ Defaults chosen by this plan:
 
 - `pnpm db:up` and `pnpm db:down` keep their names. They already run `docker compose up` and `down` for every Compose service, so Mailpit starts and stops with the database.
 - Mailpit uses a pinned image, with SMTP on `127.0.0.1:1025` and its web interface on `127.0.0.1:8025`.
-- `nodemailer` 10.x is the mail library. It has no dependencies and ships its own types. Only `@startup/email` uses it.
+- `nodemailer` (`^10.0.12`) is the mail library. It has no dependencies and ships its own types. Only `@startup/email` uses it.
 - The "not available" error is `503` with Better Auth's error body: `{ "code": "EMAIL_NOT_AVAILABLE", "message": "Email is not available." }`.
 - When email is not configured, the server logs one warning per process, at the first sign-up. Logging at import would print it during every build.
 - `autoSignInAfterVerification` stays off.
@@ -90,7 +92,7 @@ Skill: none. Verification: `pnpm agent:check`.
 | File | Change |
 | --- | --- |
 | `packages/env/src/server.ts` | Add `SMTP_URL` and `EMAIL_FROM` as `optional(...)`, plus a refinement that rejects one value set without the other. The error names the missing variable and never a value. `SMTP_URL` must be a URL with protocol `smtp:` or `smtps:` and a host. `EMAIL_FROM` must be `address` or `Display Name <address>`, contain no CR or LF, and contain a valid address. |
-| `packages/env/src/email-from.ts` (new) | The `EMAIL_FROM` parser, used by the env schema. |
+| `packages/env/src/email.ts` (new) | The `SMTP_URL` and `EMAIL_FROM` validators, used by the env schema. |
 | `packages/env/src/server.test.ts` (new), `packages/env/package.json` | Add `vitest` and a `test` script. Test cases: both empty, both valid, only one set (fails and names the other), invalid URL, invalid sender, line break in the sender, no value in any error message. Because `server.ts` parses at import, the tests check the exported schema. Export `serverSchema` for this, or move the schema into `schema.ts`. |
 | `packages/billing/vitest.config.ts`, `packages/decision/vitest.config.ts` | Add `SMTP_URL: ""` and `EMAIL_FROM: ""`, so values from a developer's shell never reach the tests. |
 | `.env.example` | New Email section: `SMTP_URL=smtp://localhost:1025` and `EMAIL_FROM="Startup Template <no-reply@example.com>"`. Comments: optional, server-only, both or neither, percent-encode reserved characters in credentials, Mailpit is local-only, and both values must change before deploying. |
@@ -172,11 +174,13 @@ The tables are separate because Better Auth deletes `rate_limit` rows older than
 | `packages/auth/src/background.ts` (new) | The default `runInBackground` calls `after()` from `next/server`. Outside a request scope, where `after()` throws, it awaits the send inline. This is also where a future jobs package would enqueue instead. |
 | `packages/auth/src/hooks.ts` (new) | The `hooks.before` rules, listed after this table. |
 | `packages/auth/src/email-rate-limit.ts` (new) | One atomic `INSERT … ON CONFLICT (key) DO UPDATE` that resets the count when the window has passed and returns the new count. The key is `HMAC-SHA256(BETTER_AUTH_SECRET, "<endpoint>:<lower-cased address>")`. |
-| `packages/auth/src/report.ts` (new), `packages/auth/src/index.ts` | `setEmailFailureReporter(fn)`. The default logs `error.name` and `error.message`, which are safe. |
+| `packages/auth/src/report.ts` (new), `packages/auth/src/index.ts` | `setEmailFailureReporter(fn)`. The reporter is stored on `globalThis`, because Next.js bundles `instrumentation.ts` separately from the route handlers and module state is not shared between them. The default logs `error.name` and `error.message`, which are safe. |
+| `packages/auth/src/minimum-duration.ts` (new) | `withMinimumDuration`, used by `next.ts`. |
+| `packages/db/src/index.ts` | Re-export `sql` from `drizzle-orm`. The per-address limit needs one raw SQL statement to stay atomic. `@startup/auth` takes it from `@startup/db`, so runtime code never imports `drizzle-orm` outside `@startup/db`, as in billing. |
 | `packages/auth/src/next.ts` | `authHandler` wraps `POST /request-password-reset` with a 500 ms minimum response time, measured around the whole Better Auth handler. Other routes are unchanged. |
 | `apps/web/src/instrumentation.ts` | In `register()` on the Node.js runtime, call `setEmailFailureReporter(Sentry.captureException)`. |
 | `packages/auth/package.json` | Add dependency `@startup/email` (`workspace:*`). Add `next` as a peer dependency (`^16.3.6`) and as an exact dev dependency matching `apps/web`. Add dev dependencies `vitest`, `@electric-sql/pglite`, and `drizzle-orm` with the same specifiers as `packages/billing`. Add a `test` script. |
-| `packages/auth/vitest.config.ts`, `src/testing/database.ts` | Deterministic environment with email empty, the network guard, and PGlite with the migrations applied (same pattern as billing). |
+| `packages/auth/vitest.config.ts`, `src/testing/auth.ts`, `src/testing/no-network.ts` | Deterministic environment with email empty, a copy of the `@startup/email` network guard, and `createTestAuth`: Better Auth on PGlite with the migrations applied, a recording sender, inline background work, and origin checks on. |
 | `docs/architecture/authentication.md` | Password reset, verification, configured and unconfigured behavior, session revocation, the `emailVerified` state for products, redirects, rate limits, and `after()`. |
 | `docs/architecture/email.md` | How auth messages are sent, the failure reporter, and that pages receiving a reset token must be kept out of analytics capture. |
 | `docs/architecture/deployment.md` | Rate-limit storage. Client IP configuration for each kind of host (`advanced.ipAddress`). A host must support `after()`, which Vercel and `next start` do. Leave `BETTER_AUTH_TRUSTED_ORIGINS` unset. Release checklist: a reset email arrives. |
@@ -267,12 +271,13 @@ Hotspots: `pnpm-lock.yaml`.
 1. Sign up, then request a reset with `redirectTo: "/reset-password"`. Read the message from Mailpit, follow the link with redirects off, and take the token from `Location`. Set a new password. The new password signs in and the old one is rejected. A session cookie captured before the reset no longer returns a session from `GET /api/auth/get-session`.
 2. Sign up, read the verification message, and follow the link. `get-session` then shows `emailVerified: true`.
 3. Requests for an unknown address and a known address get identical status and body. The known address's message arrives, and after that no message exists for the unknown address.
+4. A request for a new verification link without a session returns `401`.
 
-- Tests: the three E2E tests above, plus a check that the existing suites still pass.
+- Tests: the four E2E tests above, plus a check that the existing suites still pass.
 - Skill: none specific. Follow the testing and CI architecture docs.
 - Verification: `pnpm db:up`, `pnpm db:migrate`, `pnpm verify`, `pnpm verify:full`.
 
-Check during implementation: whether `next start` passes a client-supplied `x-forwarded-for` through unchanged. If it overwrites or appends to the header, the per-test IP trick does not work. The fallback is `test.describe.configure({ mode: "serial" })`, keeping the whole file within 3 reset requests per 60 s and 3 sign-ups per 10 s. Do not raise the limits for tests.
+Checked during implementation: `next start` passes a client-supplied `x-forwarded-for` through unchanged, so each test uses its own client IP. The tests pass with parallel workers and with one worker, as in CI. The limits are not raised for tests.
 
 ## Data and API Changes
 
@@ -287,7 +292,7 @@ Check during implementation: whether `next start` passes a client-supplied `x-fo
 
 ## Ownership
 
-- Branch: `feat/transactional-email`, created from `main` after this plan and the spec amendments merge
+- Branch: `feat/transactional-email`, created from `docs/transactional-email-spec`. Rebase onto `main` after that branch merges.
 - Worktree: `~/dev/worktrees/startup-template-transactional-email`
 - Primary owner: one implementing agent, one slice at a time
 - Expected files: the files listed in each slice
@@ -296,7 +301,7 @@ Check during implementation: whether `next start` passes a client-supplied `x-fo
 
 ## Risks
 
-- **Spoofed client IPs.** Per-client limits depend on the host's proxy headers. A directly exposed `next start` lets clients choose `x-forwarded-for`. The per-address limit and the deployment documentation are the mitigation.
+- **Spoofed client IPs.** Per-client limits depend on the host's proxy headers. A directly exposed `next start` lets clients choose `x-forwarded-for`, which was confirmed during implementation. The per-address limit and the deployment documentation are the mitigation.
 - **Hosts without `after()`.** On a host that does not support `after()` or `waitUntil`, a send can be cut off after the response. The send is then lost silently, apart from the reporter, and reset still returns success. Documented as a host requirement.
 - **Timing floor.** The 500 ms minimum hides the token write only while that write stays under 500 ms. A slow database can still show a difference. The floor does not cover `auth.api.*` calls made directly from server code, which attackers cannot time.
 - **Database writes for every limited request.** Database-backed rate limiting adds a write to every limited auth request in production, including sign-in. It costs nothing extra, but it adds load to Postgres.
@@ -304,9 +309,21 @@ Check during implementation: whether `next start` passes a client-supplied `x-fo
 - **Reset tokens are stored in plain text** in `verification.identifier`. Better Auth's default. Hashing them (`verification.storeIdentifier`) is possible hardening, outside this plan.
 - **Sign-up still reveals existing accounts** (`422`). Outside the spec.
 - **`next` peer dependency.** `@startup/auth` now takes `next` as a peer, which adds another version to keep aligned with `apps/web`.
-- **Better Auth with PGlite.** Better Auth's Drizzle adapter resolves a sibling copy of `drizzle-orm` (see the billing doc's known limitations). It should work with a PGlite Drizzle instance at runtime. If it does not, test against the node-postgres driver in the E2E job instead, and report the change.
+- **Better Auth with PGlite.** Better Auth's Drizzle adapter resolves a sibling copy of `drizzle-orm` (see the billing doc's known limitations). It works with a PGlite Drizzle instance in the `@startup/auth` tests.
 - **Rollout order.** Deploy the migration before Slice 4. With rate limiting enabled in production, a missing `rate_limit` table would break every limited auth endpoint.
 - **Weak `EMAIL_FROM` validation.** A malformed display name may pass validation but be rejected by a provider. Delivery then fails with `EmailDeliveryError` (`rejected`).
+
+## Implementation Notes
+
+Differences from the original plan:
+
+- **`nodemailer` is `^10.0.12`, not 10.0.13.** 10.0.13 was published within pnpm's minimum release age, and adding it made pnpm write a `minimumReleaseAgeExclude` entry into `pnpm-workspace.yaml`. That entry was removed, so the supply-chain policy is unchanged, and the lockfile resolves 10.0.12.
+- **`@startup/db` exports `sql`.** See Slice 4.
+- **The failure reporter lives on `globalThis`.** See Slice 4.
+- **File names.** The env validators are in `packages/env/src/email.ts`. The auth test helper is `src/testing/auth.ts`, and the network guard is copied into `@startup/auth` rather than exported from `@startup/email`.
+- **One more E2E test.** An unauthenticated request for a new verification link returns `401`.
+
+Local state left by the implementation: the shared local database has migration `0004` applied, and the worktree's Compose project runs a Mailpit container on ports `1025` and `8025`. Stop it (`docker compose down` in the worktree) before running `pnpm db:up` in the main checkout.
 
 ## Verification
 
