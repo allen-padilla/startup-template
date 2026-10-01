@@ -22,6 +22,28 @@ Local developer configuration. Never committed.
 
 Production secrets are provided by the deployment environment.
 
+Both files live in the repository root. The application and the database tooling read the root `.env.local`.
+
+## Variables
+
+| Variable                                                        | Required | Visibility    | Purpose                                       |
+| --------------------------------------------------------------- | -------- | ------------- | --------------------------------------------- |
+| `DATABASE_URL`                                                  | yes      | server        | PostgreSQL connection string                  |
+| `NEXT_PUBLIC_APP_URL`                                           | no       | browser       | reserved; not yet read by the application     |
+| `BETTER_AUTH_SECRET`                                            | yes      | server secret | signs sessions; at least 32 characters        |
+| `BETTER_AUTH_URL`                                               | yes      | server        | base URL of the application                   |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`                    | no       | server secret | billing; use Stripe test mode locally         |
+| `STRIPE_PRICE_PRO_MONTHLY`                                      | no       | server        | Stripe Price ID for the paid plan             |
+| `SMTP_URL`                                                      | no       | server secret | SMTP connection string; set with `EMAIL_FROM` |
+| `EMAIL_FROM`                                                    | no       | server        | sender address; set with `SMTP_URL`           |
+| `NEXT_PUBLIC_SENTRY_DSN`                                        | no       | browser       | enables Sentry                                |
+| `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, `NEXT_PUBLIC_POSTHOG_HOST` | no       | browser       | enables PostHog when both are set             |
+| `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`             | no       | build only    | Sentry source-map upload                      |
+
+Required variables are validated when the application builds and starts. A missing or invalid value fails loudly instead of being ignored.
+
+Optional integrations stay disabled while their variables are unset or empty. Billing endpoints return `503` until Stripe is configured.
+
 ## Server Variables
 
 Server-only values are validated by `@startup/env`.
