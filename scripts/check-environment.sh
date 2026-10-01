@@ -97,6 +97,24 @@ else
 fi
 unset secret
 
+echo "Email"
+
+# Optional, but both or neither: @startup/env rejects only one of them.
+smtp_url_set=""
+email_from_set=""
+[ -n "$(read_value SMTP_URL)" ] && smtp_url_set=1
+[ -n "$(read_value EMAIL_FROM)" ] && email_from_set=1
+
+if [ -n "$smtp_url_set" ] && [ -n "$email_from_set" ]; then
+  pass "SMTP_URL and EMAIL_FROM are set"
+elif [ -n "$smtp_url_set" ]; then
+  fail "SMTP_URL is set without EMAIL_FROM. Set both, or leave both empty to disable email"
+elif [ -n "$email_from_set" ]; then
+  fail "EMAIL_FROM is set without SMTP_URL. Set both, or leave both empty to disable email"
+else
+  pass "email is disabled (SMTP_URL and EMAIL_FROM are empty)"
+fi
+
 echo "Database"
 
 case "$(read_value DATABASE_URL)" in

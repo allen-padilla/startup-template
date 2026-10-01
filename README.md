@@ -151,7 +151,7 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Open <http://localhost:3000>.
+Open <http://localhost:3000>. Email sent by the application is captured by the local mail catcher, Mailpit, at <http://localhost:8025>.
 
 The `sed` line writes a freshly generated secret into `.env.local` without printing it. Every other value copied from `.env.example` already works for local development.
 
@@ -268,6 +268,7 @@ If the agent stops on an error, these are the usual causes:
 | `gh: command not found` or an authentication error    | the GitHub CLI is missing or signed out                  | install it and run `gh auth login` yourself                           |
 | `Cannot connect to the Docker daemon`                 | Docker is not running                                    | start Docker, then ask the agent to continue from `pnpm db:up`        |
 | `port is already allocated` on `5432`                 | another PostgreSQL is running                            | stop it, or ask the agent which process holds the port                |
+| `port is already allocated` on `1025` or `8025`       | another mail catcher is running                          | stop it, or ask the agent which process holds the port                |
 | engine or version errors during `pnpm install`        | the wrong Node.js version                                | install Node.js 24; `.node-version` pins it                           |
 | `BETTER_AUTH_SECRET` validation fails                 | the secret was not written into `.env.local`             | re-run the `sed` line from [Quick Start](#quick-start)                |
 | very slow installs or file watching on Windows        | the repository is under `/mnt/c`                         | clone it again inside the Linux filesystem                            |
@@ -640,6 +641,8 @@ Both files live in the repository root. The application and the database tooling
 | `BETTER_AUTH_URL`                                               | yes      | server        | base URL of the application                   |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`                    | no       | server secret | billing; use Stripe test mode locally         |
 | `STRIPE_PRICE_PRO_MONTHLY`                                      | no       | server        | Stripe Price ID for the paid plan             |
+| `SMTP_URL`                                                      | no       | server secret | SMTP connection string; set with `EMAIL_FROM` |
+| `EMAIL_FROM`                                                    | no       | server        | sender address; set with `SMTP_URL`           |
 | `NEXT_PUBLIC_SENTRY_DSN`                                        | no       | browser       | enables Sentry                                |
 | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, `NEXT_PUBLIC_POSTHOG_HOST` | no       | browser       | enables PostHog when both are set             |
 | `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`             | no       | build only    | Sentry source-map upload                      |
@@ -660,12 +663,12 @@ See [docs/architecture/environment.md](docs/architecture/environment.md).
 
 ## Database
 
-Local PostgreSQL runs in Docker Compose, configured in `compose.yaml`.
+Local PostgreSQL and the Mailpit mail catcher run in Docker Compose, configured in `compose.yaml`.
 
 | Command            | What it does                                                        |
 | ------------------ | ------------------------------------------------------------------- |
-| `pnpm db:up`       | starts PostgreSQL on `localhost:5432` and waits until it is ready   |
-| `pnpm db:down`     | stops and removes the container; the data volume is kept            |
+| `pnpm db:up`       | starts PostgreSQL (`5432`) and Mailpit (`1025`, `8025`), waits until ready |
+| `pnpm db:down`     | stops and removes the containers; the data volume is kept           |
 | `pnpm db:migrate`  | applies the committed migrations in `packages/db/drizzle/`          |
 | `pnpm db:generate` | generates a new migration from schema changes                       |
 | `pnpm db:studio`   | opens Drizzle Studio                                                |

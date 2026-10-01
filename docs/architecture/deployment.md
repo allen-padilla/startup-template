@@ -52,12 +52,16 @@ Set these in the deployment platform. `.env.local` is not used in production, an
 | `STRIPE_PRICE_PRO_MONTHLY`                                      | billing  | runtime         | live-mode Price ID                                  |
 | `TYPESAFE_API_KEY`                                              | decision | runtime         | secret                                              |
 | `TYPESAFE_MODEL`                                                | decision | runtime         | TypeSafe model name                                 |
+| `SMTP_URL`                                                      | email    | runtime         | secret; your SMTP provider, never the local Mailpit |
+| `EMAIL_FROM`                                                    | email    | runtime         | sender on a domain you have verified                |
 | `NEXT_PUBLIC_SENTRY_DSN`                                        | no       | build           | public                                              |
 | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, `NEXT_PUBLIC_POSTHOG_HOST` | no       | build           | public                                              |
 | `SENTRY_ORG`, `SENTRY_PROJECT`                                  | no       | build           | source-map upload                                   |
 | `SENTRY_AUTH_TOKEN`                                             | no       | build           | secret, source-map upload                           |
 
 The production build validates the required server variables through `@startup/env`, so they must exist in the build environment as well as at runtime. The build does not need to reach the database.
+
+Set `SMTP_URL` and `EMAIL_FROM` together, or leave both empty to disable email. Setting only one fails validation. Both local defaults from `.env.example` must change: a deployment that still points at `smtp://localhost:1025` fails every send with a delivery error.
 
 `NEXT_PUBLIC_*` values are compiled into the browser bundle during the build. Changing one requires a new build. Treat all of them as public.
 

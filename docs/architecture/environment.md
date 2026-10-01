@@ -38,6 +38,10 @@ Browser variables are validated by `@startup/env/client`. Client code must impor
 
 Optional browser variables treat an empty value (for example `NEXT_PUBLIC_SENTRY_DSN=`) as unset. Non-empty values must still be valid.
 
+## Paired Variables
+
+Some optional integrations need several values together. When setting only some of them cannot work, validation rejects the partial configuration instead of treating it as disabled. `SMTP_URL` and `EMAIL_FROM` are set together or both left empty. The error names the missing variable and never a value.
+
 ## Application Code
 
 Prefer validated environment modules over direct `process.env` access.

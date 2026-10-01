@@ -82,6 +82,7 @@ These defaults are intentional. Leave them unless you have a reason to change th
 | Local database user, password, and name `startup`              | `compose.yaml`, `.env.example`, both CI workflows           | used only by the local container and the disposable CI database             |
 | `postgresql://startup:startup@localhost:5432/startup`          | `.env.example`, both CI workflows                           | reaches only a local or CI database                                         |
 | `http://localhost:3000` and `http://127.0.0.1:3000`            | `.env.example`, `playwright.config.ts`, CI workflows, tests | local development and test addresses                                        |
+| Mailpit and `SMTP_URL=smtp://localhost:1025`                   | `compose.yaml`, `.env.example`                              | a local mail catcher with no authentication; never use it in production     |
 | `ci-only-secret-that-is-long-enough-for-validation`            | both CI workflows                                           | a placeholder that only satisfies validation; never use it anywhere else    |
 | Test secrets in `packages/billing`                             | `vitest.config.ts` and test files                           | placeholders; the tests never contact Stripe or a real database             |
 | Test API key in `packages/decision`                            | test files                                                  | a placeholder; the tests never contact TypeSafe                             |
