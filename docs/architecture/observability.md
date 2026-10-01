@@ -28,9 +28,15 @@ Use stable application user IDs when identifying authenticated users.
 
 Do not use email addresses as the primary distinct ID when a stable user ID exists.
 
-Reset analytics identity on logout.
+Reset analytics identity on logout. The account page's sign-out calls `posthog.reset()` when PostHog is loaded.
 
-Keep pages that receive a token in their URL out of analytics capture, such as the page a password reset link redirects to (`?token=…`). Do not capture pageviews or autocapture on them, or strip the token before PostHog sends the URL.
+Keep tokens in URLs out of analytics. The password reset page (`/reset-password?token=…`) is the template's only page that receives one, and three measures cover it:
+
+- `src/instrumentation-client.ts` removes `token` from the URL on `/reset-password` before Sentry and PostHog start. This is required, not only defensive: PostHog records the first URL it sees as a person property (`$initial_current_url`) and sends it with feature flag requests, which `before_send` never sees. The page receives the token from the server, so it does not need it in the URL.
+- PostHog's `before_send` passes every event, including session replay data (`$snapshot`), through `scrubAuthTokens`.
+- `/reset-password` is served with `Referrer-Policy: no-referrer` (`next.config.ts`), so its URL is never sent to other sites.
+
+A new page that receives a token in its URL needs the same treatment: add it to the removal in `instrumentation-client.ts`, and to `scrubAuthTokens` if the token is in the path.
 
 ## Implementation
 

@@ -5,6 +5,17 @@ import { scrubAuthTokens } from "@startup/auth/redact";
 import { clientEnv } from "@startup/env/client";
 import posthog from "posthog-js";
 
+// The reset page receives its token in the URL. Remove it before Sentry and
+// PostHog start: PostHog records the first URL it sees as a person property
+// and sends it with feature flag requests, which `before_send` never sees.
+// The page already has the token from the server. See observability.md.
+const startUrl = new URL(window.location.href);
+
+if (startUrl.pathname === "/reset-password" && startUrl.searchParams.has("token")) {
+  startUrl.searchParams.delete("token");
+  window.history.replaceState(window.history.state, "", startUrl);
+}
+
 Sentry.init({
   dsn: clientEnv.NEXT_PUBLIC_SENTRY_DSN,
 

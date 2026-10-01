@@ -184,7 +184,14 @@ The reset token test:
 - Assert that no body sent to the stub contains the value, using the boolean form from #21.
 - Assert that the response carries `Referrer-Policy: no-referrer` and that the address bar no longer has the token.
 
-To make the browser's Sentry pageload deterministic, send a sampled `sentry-trace` header on the document request. The server then renders sampled trace metadata, which the browser continues. Confirm this works. If it does not, the Sentry part of the check rests on #21's server test and the existing scrubbing.
+To make the browser's Sentry pageload deterministic, send a sampled `sentry-trace` header on the document request. The server then renders sampled trace metadata, which the browser continues. Confirmed in Slice 4: the page's Sentry envelopes arrive with the trace ID on every run.
+
+Found in Slice 4, and handled there:
+
+- **The token reached PostHog through `/flags`.** PostHog records the first URL it sees as the person property `$initial_current_url` and sends it with feature flag requests, which are not events, so `before_send` never sees them. `get_current_url` changes only URL matching, and `custom_personal_data_properties` works only with `mask_personal_data_properties`, which would also mask ad click IDs such as `gclid`. Instead, `instrumentation-client.ts` removes `token` from the URL on `/reset-password` before Sentry and PostHog start. The page already has the token from the server. The form's own removal remains for client-side navigations, and `before_send` remains for events.
+- **PostHog ignores automated browsers.** It treats `navigator.webdriver` and a `HeadlessChrome` user agent as a bot and sends no events. The token test presents as a regular browser. The application's bot filter is unchanged.
+- **The stub recognizes gzip by its magic bytes.** PostHog does not always mark a gzip body with `compression=gzip-js`.
+- **Next.js's route announcer has `role="alert"`.** Tests look for messages inside `main`.
 
 **Documentation**
 
@@ -239,7 +246,7 @@ To make the browser's Sentry pageload deterministic, send a sampled `sentry-trac
 - **Origin mismatch in local E2E.** Without the `BETTER_AUTH_URL` override, every browser test fails locally with `403` while CI passes. Slice 4 adds the override before any browser test.
 - **`history.replaceState` and the App Router.** Next.js supports native `replaceState` and keeps `useSearchParams` in sync, but this is the first use in the repository. Check that the form keeps its token after the URL changes. If it does not, read the token once into state before replacing the URL.
 - **PostHog session replay.** Checked in Slice 3: in posthog-js 1.434 the recorder sends replay data with `capture("$snapshot", …)`, and `capture` runs `before_send` for every event, so recordings are scrubbed like other events. Scrubbing walks every string in each replay batch, which costs some browser CPU when replay is enabled.
-- **PostHog payload format.** The stub must decode PostHog's compressed bodies, or the token check passes without having seen anything. The test therefore waits for this page's `$pageview` before asserting.
+- **PostHog payload format.** The stub must decode PostHog's compressed bodies, or the token check passes without having seen anything. The test therefore waits for this page's `$pageview` and Sentry pageload, identified by a marker query parameter, before asserting.
 - **Sign-up reveals existing accounts.** Accepted and recorded in the spec.
 - **Rate limits in E2E.** Better Auth limits sign-in per IP. Each test uses its own IP through the fixture, and the limits are not raised.
 - **No request deduplication.** `getSession()` queries the session on every call. Each planned page calls it once per request.

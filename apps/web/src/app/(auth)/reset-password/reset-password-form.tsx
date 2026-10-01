@@ -33,8 +33,9 @@ export function InvalidResetLink() {
 }
 
 export function ResetPasswordForm({ token }: { token: string }) {
-  // The token stays in memory for the submit. Removing it from the address
-  // bar and the history entry keeps it out of later page views.
+  // The token stays in memory for the submit. `instrumentation-client.ts`
+  // already removes it from the address bar on a full page load; this also
+  // covers a client-side navigation to the page.
   useEffect(() => {
     window.history.replaceState(null, "", "/reset-password");
   }, []);

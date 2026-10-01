@@ -1,16 +1,16 @@
-// Reads what the application sent to the Sentry stub (`sentry-stub.ts`).
-// See docs/architecture/testing.md.
+// Reads what the application sent to Sentry and PostHog, through the
+// observability stub (`observability-stub.ts`). See docs/architecture/testing.md.
 import { randomBytes } from "node:crypto";
 
 import { expect } from "@playwright/test";
 
-const SENTRY_STUB_URL = "http://127.0.0.1:9999";
+const STUB_URL = "http://127.0.0.1:9999";
 
-/** Every request body the application has sent to Sentry during this run. */
-export async function sentryReceived(): Promise<string[]> {
-  const response = await fetch(`${SENTRY_STUB_URL}/received`);
+/** Every request the application has sent to Sentry or PostHog during this run. */
+export async function observabilityReceived(): Promise<string[]> {
+  const response = await fetch(`${STUB_URL}/received`);
 
-  expect(response.ok, "the Sentry stub is reachable").toBe(true);
+  expect(response.ok, "the observability stub is reachable").toBe(true);
 
   return (await response.json()) as string[];
 }

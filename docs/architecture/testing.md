@@ -48,15 +48,20 @@ The current E2E suite includes smoke coverage for:
 - authentication endpoint availability
 - billing endpoint protection (unauthenticated checkout, unsigned webhooks)
 - email (`tests/e2e/email.spec.ts`): password reset end to end, sign-up verification, identical responses for unknown addresses, and signed-in-only verification resend. The tests read delivered messages from Mailpit through `tests/e2e/support/mailpit.ts` (`MAILPIT_URL`, default `http://127.0.0.1:8025`).
-- Sentry: the reset link's token never reaches Sentry (`tests/e2e/email.spec.ts`). The test follows the link with a sampled `sentry-trace` header, so the server records its spans whatever the sample rate, and reads what Sentry received through `tests/e2e/support/sentry.ts`.
+- Sentry: the reset link's token never reaches Sentry (`tests/e2e/email.spec.ts`). The test follows the link with a sampled `sentry-trace` header, so the server records its spans whatever the sample rate.
+- authentication pages (`tests/e2e/auth-pages.spec.ts`): sign-up, sign-in and its redirect rule, sign-out, verification (same browser, signed out, resend, altered link), password reset through the pages, identical forgot-password messages, the "email unavailable" and rate-limit messages, and that the reset page's token never reaches PostHog or Sentry. Browser tests import `test` from `tests/e2e/support/fixtures.ts`, which gives every browser context its own client IP and provides `newVisitor()` for a second visitor.
 
-`pnpm test:e2e` builds the application with `NEXT_PUBLIC_SENTRY_DSN` pointing at a Sentry stub on `127.0.0.1:9999` (`tests/e2e/support/sentry-stub.ts`), which Playwright starts with the application. E2E runs therefore never report to a real Sentry project, even when `.env.local` sets a DSN. The DSN is inlined at build time, so a build made by `pnpm test:e2e` reports to the stub until the next build.
+`pnpm test:e2e` builds the application with `scripts/build-e2e.sh`, which points Sentry and PostHog at an observability stub on `127.0.0.1:9999` (`tests/e2e/support/observability-stub.ts`). Playwright starts the stub with the application, and tests read what it received through `tests/e2e/support/observability.ts`. E2E runs therefore never report to real Sentry or PostHog projects, even when `.env.local` sets other values. These `NEXT_PUBLIC_*` values are inlined at build time, so a build made by `pnpm test:e2e` reports to the stub until the next build.
 
-The E2E server runs in production mode, so rate limits apply. Email tests give each test its own address and its own `x-forwarded-for` client IP, so tests never share a mailbox or a rate-limit bucket. Do not raise the limits to make tests pass.
+PostHog drops events from browsers it considers bots, which includes every automated browser. A test that needs PostHog's events must present as a regular browser, as the reset page test in `auth-pages.spec.ts` does. Do not turn off PostHog's bot filter in the application to make tests pass.
+
+The E2E server runs in production mode, so rate limits apply. Tests give each test its own address and its own `x-forwarded-for` client IP, so tests never share a mailbox or a rate-limit bucket. Do not raise the limits to make tests pass.
+
+Playwright runs the application with `BETTER_AUTH_URL=http://127.0.0.1:3000`, the origin the tests use. Better Auth rejects browser requests from any other origin, and `.env.local` usually says `http://localhost:3000`. CI sets the same value.
 
 Playwright runs against a production-style Next.js server for more deterministic testing.
 
-`pnpm test:e2e` builds `@startup/web` first, then Playwright starts `scripts/start-e2e-server.sh`, which `exec`s `next start` on `127.0.0.1:3000`. Playwright never reuses an existing server and stops the server when the run finishes. Playwright also starts the Sentry stub on `127.0.0.1:9999`. Because the ports are fixed, only one worktree at a time may run E2E tests. See `parallel-development.md`.
+`pnpm test:e2e` builds `@startup/web` first, then Playwright starts `scripts/start-e2e-server.sh`, which `exec`s `next start` on `127.0.0.1:3000`. Playwright never reuses an existing server and stops the server when the run finishes. Playwright also starts the observability stub on `127.0.0.1:9999`. Because the ports are fixed, only one worktree at a time may run E2E tests. See `parallel-development.md`.
 
 ### Prerequisites
 
