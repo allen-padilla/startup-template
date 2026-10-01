@@ -13,5 +13,10 @@ export default defineConfig({
       EMAIL_FROM: "",
     },
     setupFiles: ["./src/testing/no-network.ts"],
+    // Each test starts PGlite, applies the migrations, and hashes passwords.
+    // That takes 1-2 s locally and up to about 8 s on CI runners, beyond
+    // Vitest's 5 s default.
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
   },
 });
