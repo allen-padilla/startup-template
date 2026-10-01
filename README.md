@@ -433,16 +433,15 @@ Check the plan for:
 - **Tests.** Unit tests for the logic, and at least one end-to-end test for the main path.
 - **Order.** Each slice builds and passes `pnpm verify` on its own.
 
-A reasonable slice order for Feedbox:
+A reasonable slice order for Feedbox. Sign-up, sign-in, and the account page already exist, so no slice builds them:
 
 | Slice | Contents                                                                           | Skills                                       |
 | ----- | ---------------------------------------------------------------------------------- | -------------------------------------------- |
-| 1     | sign-up, sign-in, and sign-out pages using the existing `@startup/auth` client     | none                                         |
-| 2     | `boards` and `feedback` tables and their migration                                  | `database-migration`                         |
-| 3     | board creation and the board list, with the free-plan limit                         | `add-api-route`, possibly `add-package`      |
-| 4     | the public submission page and its API route                                        | `add-api-route`                              |
-| 5     | the inbox with status changes                                                       | `add-api-route`                              |
-| 6     | the upgrade prompt wired to the existing checkout route, and end-to-end tests       | none                                         |
+| 1     | `boards` and `feedback` tables and their migration                                  | `database-migration`                         |
+| 2     | board creation and the board list, with the free-plan limit                         | `add-api-route`, possibly `add-package`      |
+| 3     | the public submission page and its API route                                        | `add-api-route`                              |
+| 4     | the inbox with status changes                                                       | `add-api-route`                              |
+| 5     | the upgrade prompt wired to the existing checkout route, and end-to-end tests       | none                                         |
 
 Ask for changes to the plan until you agree with it, then commit the spec and the plan together on a branch such as `docs/feedbox-core`, and merge them. From here on, the spec and plan are the contract every slice is checked against.
 
@@ -453,21 +452,21 @@ Start a fresh agent session for each slice. A short context with the spec and pl
 ```text
 Follow .agents/commands/implement.md.
 
-Implement slice 2 of docs/plans/feedbox-core.md: the boards and feedback
+Implement slice 1 of docs/plans/feedbox-core.md: the boards and feedback
 tables. The spec is docs/specs/feedbox-core.md.
 
 Use the database-migration skill. Show me the generated SQL and point out
 anything destructive before applying it.
 
 Work on a new branch called feat/feedbox-schema. Stay inside this slice: do
-not start slice 3, and do not refactor unrelated code. If the plan turns out
+not start slice 2, and do not refactor unrelated code. If the plan turns out
 to be wrong, stop and tell me instead of silently changing it.
 
 Run pnpm verify. Then commit, push, and open a pull request that links the
 spec and plan. Do not merge it.
 ```
 
-Change the slice number, the branch name, and the named skill for each slice. Add "Run pnpm verify:full" to the prompt for slices that change sign-in, billing, routing, or a complete user workflow, such as slices 1, 3, 4, and 6 here.
+Change the slice number, the branch name, and the named skill for each slice. Add "Run pnpm verify:full" to the prompt for slices that change sign-in, billing, routing, or a complete user workflow, such as slices 2, 3, and 5 here.
 
 #### Step 5: Review Before Merging
 
@@ -492,7 +491,7 @@ Repeat steps 4 and 5 for every slice.
 
 #### Step 6: Turn On Billing Locally
 
-Slice 6 needs Stripe in test mode. With a Stripe account and the [Stripe CLI](https://docs.stripe.com/stripe-cli):
+Slice 5 needs Stripe in test mode. With a Stripe account and the [Stripe CLI](https://docs.stripe.com/stripe-cli):
 
 1. In the Stripe Dashboard, in test mode, create a product with a monthly recurring price.
 2. Put the test secret key in `STRIPE_SECRET_KEY` and the Price ID in `STRIPE_PRICE_PRO_MONTHLY` in `.env.local`. Do this yourself, and do not paste keys into the agent's chat.

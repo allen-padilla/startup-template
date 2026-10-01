@@ -28,8 +28,9 @@ Domain logic belongs in the owning `@startup/*` package, exposed through that pa
 2. Decide the route path and HTTP methods. Export one function per method (`GET`, `POST`, ...) from `route.ts`.
 
 3. Decide whether the route requires authentication.
-   - Authenticated routes use the existing Better Auth server instance:
-     `auth.api.getSession({ headers: request.headers })` from `@startup/auth`.
+   - Authenticated routes read the session with `getSession()` from
+     `@startup/auth/next`. It reads the request headers itself and returns the
+     session or `null`.
    - Return `401` when there is no session.
    - Do not create parallel authentication, session parsing, or cookie handling.
 

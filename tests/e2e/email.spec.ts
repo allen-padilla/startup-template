@@ -1,6 +1,4 @@
 // tests/e2e/email.spec.ts
-import { randomInt, randomUUID } from "node:crypto";
-
 import {
   expect,
   test,
@@ -8,21 +6,12 @@ import {
   type Playwright,
 } from "@playwright/test";
 
+import { uniqueAddress, uniqueIp } from "./support/identity";
 import { linkPath, messagesTo, waitForMessage } from "./support/mailpit";
-import { sampledTrace, sentryReceived } from "./support/sentry";
+import { observabilityReceived, sampledTrace } from "./support/observability";
 
 const OLD_PASSWORD = "first-password-123";
 const NEW_PASSWORD = "second-password-456";
-
-// Each test gets its own address and client IP, so tests never share a
-// mailbox or a rate-limit bucket. The production server enforces the limits.
-function uniqueAddress() {
-  return `e2e-${randomUUID()}@example.test`;
-}
-
-function uniqueIp() {
-  return `10.${randomInt(256)}.${randomInt(256)}.${randomInt(1, 255)}`;
-}
 
 // A context without cookies. Better Auth checks the Origin header of requests
 // that carry cookies; these API calls send none, like a server-side caller.
@@ -123,7 +112,7 @@ test("the reset link's token never reaches Sentry", async ({ playwright, baseURL
   await expect
     .poll(
       async () =>
-        (await sentryReceived()).some(
+        (await observabilityReceived()).some(
           (body) =>
             body.includes(trace.traceId) && body.includes("/api/auth/reset-password/"),
         ),
@@ -131,7 +120,7 @@ test("the reset link's token never reaches Sentry", async ({ playwright, baseURL
     )
     .toBe(true);
 
-  const received = (await sentryReceived()).join("\n");
+  const received = (await observabilityReceived()).join("\n");
 
   // A boolean, so a failure does not print the token or the payload.
   expect(received.includes(token), "the token is redacted").toBe(false);

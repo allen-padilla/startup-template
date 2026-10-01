@@ -60,7 +60,7 @@ Corrected two statements in `docs/specs/auth-pages.md` that did not match Better
 
 **`packages/auth/src/next.ts`**
 - Add `getSession()`. It awaits `headers()` from `next/headers` and returns `auth.api.getSession({ headers })`, the session or `null`.
-- Wrap it in React's `cache` so a layout and a page in the same request share one lookup.
+- It is not wrapped in React's `cache`: `@startup/auth` has no React type definitions, and no planned layout reads the session, so nothing would share the lookup. Add `cache` (and `@types/react`) if a layout and a page come to need the session in the same request.
 - Export `type Session = NonNullable<Awaited<ReturnType<typeof getSession>>>`.
 - It never redirects or throws for a missing session.
 
@@ -141,7 +141,7 @@ All under `apps/web/src/app/`. Each page is a server component that reads `searc
 
 `/account`, `/sign-in`, and `/sign-up` read the session, which makes them dynamic. Confirm in the build output that none is prerendered (`○`).
 
-**Landing page:** `apps/web/src/app/page.tsx` renders `<Link href="/sign-up" className={buttonVariants({ size: "lg" })}>Get Started</Link>`. Update `tests/e2e/home.spec.ts` to look for a link, so E2E stays green in this slice.
+**Landing page:** `apps/web/src/app/page.tsx` renders `<Link href="/sign-up" className={buttonVariants()}>Get Started</Link>`, at the button's default size so the page looks as before. Update `tests/e2e/home.spec.ts` to look for a link, so E2E stays green in this slice.
 
 **`apps/web/next.config.ts`**
 - Add `headers()` with `Referrer-Policy: no-referrer` for `/reset-password`.
@@ -184,7 +184,14 @@ The reset token test:
 - Assert that no body sent to the stub contains the value, using the boolean form from #21.
 - Assert that the response carries `Referrer-Policy: no-referrer` and that the address bar no longer has the token.
 
-To make the browser's Sentry pageload deterministic, send a sampled `sentry-trace` header on the document request. The server then renders sampled trace metadata, which the browser continues. Confirm this works. If it does not, the Sentry part of the check rests on #21's server test and the existing scrubbing.
+To make the browser's Sentry pageload deterministic, send a sampled `sentry-trace` header on the document request. The server then renders sampled trace metadata, which the browser continues. Confirmed in Slice 4: the page's Sentry envelopes arrive with the trace ID on every run.
+
+Found in Slice 4, and handled there:
+
+- **The token reached PostHog through `/flags`.** PostHog records the first URL it sees as the person property `$initial_current_url` and sends it with feature flag requests, which are not events, so `before_send` never sees them. `get_current_url` changes only URL matching, and `custom_personal_data_properties` works only with `mask_personal_data_properties`, which would also mask ad click IDs such as `gclid`. Instead, `instrumentation-client.ts` removes `token` from the URL on `/reset-password` before Sentry and PostHog start. The page already has the token from the server. The form's own removal remains for client-side navigations, and `before_send` remains for events.
+- **PostHog ignores automated browsers.** It treats `navigator.webdriver` and a `HeadlessChrome` user agent as a bot and sends no events. The token test presents as a regular browser. The application's bot filter is unchanged.
+- **The stub recognizes gzip by its magic bytes.** PostHog does not always mark a gzip body with `compression=gzip-js`.
+- **Next.js's route announcer has `role="alert"`.** Tests look for messages inside `main`.
 
 **Documentation**
 
@@ -238,11 +245,11 @@ To make the browser's Sentry pageload deterministic, send a sampled `sentry-trac
 
 - **Origin mismatch in local E2E.** Without the `BETTER_AUTH_URL` override, every browser test fails locally with `403` while CI passes. Slice 4 adds the override before any browser test.
 - **`history.replaceState` and the App Router.** Next.js supports native `replaceState` and keeps `useSearchParams` in sync, but this is the first use in the repository. Check that the form keeps its token after the URL changes. If it does not, read the token once into state before replacing the URL.
-- **PostHog session replay.** If a project enables session replay, recordings may include the page URL before the token is removed. It is not yet known whether replay data passes through `before_send` in posthog-js 1.434. Check it in Slice 3. If it does not, start PostHog with replay disabled when the first page is `/reset-password`.
-- **PostHog payload format.** The stub must decode PostHog's compressed bodies, or the token check passes without having seen anything. The test therefore waits for this page's `$pageview` before asserting.
+- **PostHog session replay.** Checked in Slice 3: in posthog-js 1.434 the recorder sends replay data with `capture("$snapshot", …)`, and `capture` runs `before_send` for every event, so recordings are scrubbed like other events. Scrubbing walks every string in each replay batch, which costs some browser CPU when replay is enabled.
+- **PostHog payload format.** The stub must decode PostHog's compressed bodies, or the token check passes without having seen anything. The test therefore waits for this page's `$pageview` and Sentry pageload, identified by a marker query parameter, before asserting.
 - **Sign-up reveals existing accounts.** Accepted and recorded in the spec.
 - **Rate limits in E2E.** Better Auth limits sign-in per IP. Each test uses its own IP through the fixture, and the limits are not raised.
-- **`cache` in route handlers.** React `cache` deduplicates only during server component rendering. In route handlers `getSession()` runs once per call, which is correct but not deduplicated.
+- **No request deduplication.** `getSession()` queries the session on every call. Each planned page calls it once per request.
 - **Name length.** Better Auth does not limit `name`. The input sets `maxLength={100}`, and the server accepts what Better Auth accepts. Product code can add validation later.
 
 ## Verification
