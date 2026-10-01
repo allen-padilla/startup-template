@@ -196,11 +196,11 @@ Follow the `database-migration` skill for the migration itself.
 
 ### Shared Local Database
 
-All worktrees currently use the same local PostgreSQL service on `localhost:5432`, from the main checkout's Docker Compose project.
+All worktrees currently use the same local PostgreSQL service on `localhost:5432` and the same Mailpit mail catcher on `localhost:1025` and `localhost:8025`, from the main checkout's Docker Compose project. Messages from every worktree arrive in the same Mailpit inbox.
 
 - Running `pnpm db:migrate` in one worktree changes the database every other worktree uses.
 - Do not run migration work from more than one worktree at a time against the shared local database.
-- Do not run `pnpm db:up` from task worktrees while the main checkout's database is running. Docker Compose names the project after the directory, so it would start a second PostgreSQL container that fails to bind port `5432`.
+- Do not run `pnpm db:up` from task worktrees while the main checkout's database is running. Docker Compose names the project after the directory, so it would start second PostgreSQL and Mailpit containers that fail to bind their ports.
 - Coordinate database work explicitly, and report when a local database contains migrations from an unmerged branch.
 
 ## Lockfile and Dependency Coordination

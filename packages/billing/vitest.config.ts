@@ -12,6 +12,8 @@ export default defineConfig({
       STRIPE_SECRET_KEY: "",
       STRIPE_WEBHOOK_SECRET: "",
       STRIPE_PRICE_PRO_MONTHLY: "",
+      SMTP_URL: "",
+      EMAIL_FROM: "",
     },
   },
 });

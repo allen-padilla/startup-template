@@ -30,6 +30,7 @@ New here? [Building a Product with an Agent](#building-a-product-with-an-agent) 
 | Database        | PostgreSQL 17, Drizzle ORM                    |
 | Authentication  | Better Auth                                   |
 | Billing         | Stripe                                        |
+| Email           | SMTP (Nodemailer), Mailpit locally            |
 | Observability   | Sentry, PostHog                               |
 | Testing         | Vitest, Playwright                            |
 | CI              | GitHub Actions, Dependabot                    |
@@ -40,6 +41,7 @@ New here? [Building a Product with an Agent](#building-a-product-with-an-agent) 
 flowchart LR
   browser["Browser"]
   stripe["Stripe"]
+  smtp["SMTP provider or Mailpit"]
 
   subgraph web["apps/web (Next.js)"]
     pages["Pages and components"]
@@ -51,6 +53,7 @@ flowchart LR
   subgraph packages["packages/"]
     auth["@startup/auth"]
     billing["@startup/billing"]
+    email["@startup/email"]
     db["@startup/db"]
   end
 
@@ -66,18 +69,20 @@ flowchart LR
   checkoutRoute --> billing
   webhookRoute --> billing
   auth --> db
+  auth --> email
   billing --> db
   db --> postgres
+  email -- "reset and verification" --> smtp
   billing -- "customers, checkout" --> stripe
   web -.-> observability
 
   classDef optional stroke-dasharray: 5 5
-  class stripe,observability optional
+  class stripe,smtp,observability optional
 ```
 
 The browser only talks to the Next.js application. Route handlers stay thin: they check the session, call a package, and turn errors into HTTP responses.
 
-Each integration lives in one package. `@startup/auth` is the only code that imports `better-auth`, `@startup/billing` the only code that imports `stripe`, and `@startup/db` the only code that opens a database connection.
+Each integration lives in one package. `@startup/auth` is the only code that imports `better-auth`, `@startup/billing` the only code that imports `stripe`, `@startup/email` the only code that sends email, and `@startup/db` the only code that opens a database connection.
 
 Dashed services are optional locally.
 
@@ -151,7 +156,7 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Open <http://localhost:3000>.
+Open <http://localhost:3000>. Email sent by the application is captured by the local mail catcher, Mailpit, at <http://localhost:8025>.
 
 The `sed` line writes a freshly generated secret into `.env.local` without printing it. Every other value copied from `.env.example` already works for local development.
 
@@ -268,6 +273,7 @@ If the agent stops on an error, these are the usual causes:
 | `gh: command not found` or an authentication error    | the GitHub CLI is missing or signed out                  | install it and run `gh auth login` yourself                           |
 | `Cannot connect to the Docker daemon`                 | Docker is not running                                    | start Docker, then ask the agent to continue from `pnpm db:up`        |
 | `port is already allocated` on `5432`                 | another PostgreSQL is running                            | stop it, or ask the agent which process holds the port                |
+| `port is already allocated` on `1025` or `8025`       | another mail catcher is running                          | stop it, or ask the agent which process holds the port                |
 | engine or version errors during `pnpm install`        | the wrong Node.js version                                | install Node.js 24; `.node-version` pins it                           |
 | `BETTER_AUTH_SECRET` validation fails                 | the secret was not written into `.env.local`             | re-run the `sed` line from [Quick Start](#quick-start)                |
 | very slow installs or file watching on Windows        | the repository is under `/mnt/c`                         | clone it again inside the Linux filesystem                            |
@@ -640,6 +646,8 @@ Both files live in the repository root. The application and the database tooling
 | `BETTER_AUTH_URL`                                               | yes      | server        | base URL of the application                   |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`                    | no       | server secret | billing; use Stripe test mode locally         |
 | `STRIPE_PRICE_PRO_MONTHLY`                                      | no       | server        | Stripe Price ID for the paid plan             |
+| `SMTP_URL`                                                      | no       | server secret | SMTP connection string; set with `EMAIL_FROM` |
+| `EMAIL_FROM`                                                    | no       | server        | sender address; set with `SMTP_URL`           |
 | `NEXT_PUBLIC_SENTRY_DSN`                                        | no       | browser       | enables Sentry                                |
 | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, `NEXT_PUBLIC_POSTHOG_HOST` | no       | browser       | enables PostHog when both are set             |
 | `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`             | no       | build only    | Sentry source-map upload                      |
@@ -660,12 +668,12 @@ See [docs/architecture/environment.md](docs/architecture/environment.md).
 
 ## Database
 
-Local PostgreSQL runs in Docker Compose, configured in `compose.yaml`.
+Local PostgreSQL and the Mailpit mail catcher run in Docker Compose, configured in `compose.yaml`.
 
 | Command            | What it does                                                        |
 | ------------------ | ------------------------------------------------------------------- |
-| `pnpm db:up`       | starts PostgreSQL on `localhost:5432` and waits until it is ready   |
-| `pnpm db:down`     | stops and removes the container; the data volume is kept            |
+| `pnpm db:up`       | starts PostgreSQL (`5432`) and Mailpit (`1025`, `8025`), waits until ready |
+| `pnpm db:down`     | stops and removes the containers; the data volume is kept           |
 | `pnpm db:migrate`  | applies the committed migrations in `packages/db/drizzle/`          |
 | `pnpm db:generate` | generates a new migration from schema changes                       |
 | `pnpm db:studio`   | opens Drizzle Studio                                                |
@@ -700,6 +708,7 @@ Run commands from the repository root.
 | `packages/billing`           | Stripe integration (`@startup/billing`)            |
 | `packages/db`                | Drizzle schema and migrations (`@startup/db`)      |
 | `packages/decision`          | bounded AI decisions (`@startup/decision`)         |
+| `packages/email`             | transactional email over SMTP (`@startup/email`)   |
 | `packages/env`               | validated environment variables (`@startup/env`)   |
 | `packages/ui`                | shared React components (`@startup/ui`)            |
 | `packages/typescript-config` | shared TypeScript configuration                    |
@@ -715,6 +724,7 @@ flowchart TD
   ui["@startup/ui"]
   db["@startup/db"]
   decision["@startup/decision"]
+  email["@startup/email"]
   env["@startup/env"]
 
   web --> auth
@@ -722,11 +732,13 @@ flowchart TD
   web --> ui
   web --> env
   auth --> db
+  auth --> email
   auth --> env
   billing --> db
   billing --> env
   db --> env
   decision --> env
+  email --> env
 ```
 
 Arrows point from a package to what it depends on. Every package also uses `@startup/typescript-config`, which is left out to keep the graph readable.
@@ -744,7 +756,7 @@ pnpm test:e2e    # Playwright end-to-end tests
 
 `pnpm test:e2e` builds the application, starts it on port `3000`, runs the tests, and stops the server. It needs:
 
-- the local database running with migrations applied
+- the local database and Mailpit running (`pnpm db:up`), with migrations applied
 - port `3000` free, so stop `pnpm dev` first
 - the Playwright browser, installed once per machine:
 

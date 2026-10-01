@@ -8,14 +8,16 @@ Local PostgreSQL runs through Docker Compose.
 
 ## Local Database
 
-`compose.yaml` defines the local PostgreSQL service. Run these commands from the repository root:
+`compose.yaml` defines the local PostgreSQL service and the Mailpit mail catcher used by email (see `email.md`). Run these commands from the repository root:
 
-- `pnpm db:up` starts the database on `localhost:5432` and waits until it accepts connections.
-- `pnpm db:down` stops and removes the container. The data volume is kept.
+- `pnpm db:up` starts the database on `localhost:5432` and Mailpit on `localhost:1025` (SMTP) and `localhost:8025` (web interface), and waits until both are ready.
+- `pnpm db:down` stops and removes both containers. The data volume is kept. Mailpit keeps no messages.
 - `pnpm db:logs` follows the database logs.
 - `pnpm db:studio` opens Drizzle Studio.
 
-`pnpm db:up` waits for the container's health check. A new database takes a few seconds to initialize, and `pnpm db:migrate` fails if it runs before the database is ready.
+`pnpm db:up` waits for the containers' health checks. A new database takes a few seconds to initialize, and `pnpm db:migrate` fails if it runs before the database is ready.
+
+If a port is already in use, `pnpm db:up` fails with `port is already allocated`. Stop the other PostgreSQL or mail catcher that holds `5432`, `1025`, or `8025`, or find it with `ss -ltnp`.
 
 The database tooling reads `DATABASE_URL` from the shell environment first, then from the root `.env.local`.
 
@@ -38,6 +40,13 @@ Authentication-related tables are currently defined in:
 Billing tables (`billing_customers`, `subscriptions`) are defined in:
 
 `packages/db/src/schema/billing.ts`
+
+Rate-limit tables are defined with the tables of the code that uses them:
+
+- `rate_limit` in `packages/db/src/schema/auth.ts`: Better Auth's per-client counters (model `rateLimit`), keyed by client IP and path.
+- `email_rate_limit` in `packages/db/src/schema/email.ts`: per-address counters for requests that send email. The key is an HMAC of the endpoint and the address, so no address is stored.
+
+Both hold short-lived counters only. Losing them resets the limits and loses no other data.
 
 ## Migrations
 

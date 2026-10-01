@@ -16,5 +16,19 @@ services:
       timeout: 5s
       retries: 10
 
+  # Local mail catcher. Captures every message sent locally; read them at
+  # http://localhost:8025. It has no authentication: never use it in production.
+  mailpit:
+    image: axllent/mailpit:v1.31.3
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
 volumes:
   startup_postgres_data:

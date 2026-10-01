@@ -12,6 +12,8 @@ export default defineConfig({
       BETTER_AUTH_URL: "http://localhost:3000",
       TYPESAFE_API_KEY: "",
       TYPESAFE_MODEL: "",
+      SMTP_URL: "",
+      EMAIL_FROM: "",
     },
   },
 });

@@ -144,6 +144,17 @@ Stripe server code lives in `packages/billing` (`@startup/billing`). Do not impo
 
 See `docs/architecture/billing.md`.
 
+## Email
+
+Email code lives in `packages/email` (`@startup/email`). It is the only code that opens an SMTP connection or imports a mail library. Do not import `nodemailer` elsewhere.
+
+- `SMTP_URL` and `EMAIL_FROM` are server-only. `SMTP_URL` is a secret. Set both or neither.
+- Add messages as templates in `@startup/email`; escape user-supplied values with its `html` template tag.
+- Never log or report message bodies, links, or tokens.
+- Mailpit is for local development and CI only.
+
+See `docs/architecture/email.md`.
+
 ## Testing
 
 Vitest is used for fast unit and integration-level tests.

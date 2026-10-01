@@ -71,7 +71,7 @@ Better Auth configuration.
 - `@startup/auth/client` exports the browser-safe auth client.
 - `@startup/auth/next` exports the server-only Next.js route handler (`authHandler`).
 
-Depends on `@startup/db` and `@startup/env`.
+Depends on `@startup/db`, `@startup/email`, and `@startup/env`. Takes `next` as a peer dependency for `after()`.
 
 See `authentication.md`.
 
@@ -90,3 +90,11 @@ Bounded AI decisions (classification, routing, scoring, gating) through TypeSafe
 Server-only. Depends on `@startup/env`. The only code that calls the TypeSafe API. No application currently depends on it.
 
 See `decision-models.md`.
+
+### @startup/email
+
+Transactional email over SMTP: `sendEmail`, `createEmailSender`, typed message templates, and `Email*` errors.
+
+Server-only. Owns the `nodemailer` dependency. Depends on `@startup/env`. The only code that opens an SMTP connection.
+
+See `email.md`.

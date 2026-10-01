@@ -57,7 +57,8 @@ Some dependencies must change together:
 | `react` peer range                 | `packages/ui`, `packages/auth` `peerDependencies` | must include the version `apps/web` installs                 |
 | `next`, `eslint-config-next`       | `apps/web`                                        | same exact version                                           |
 | `@types/react`, `@types/react-dom` | `apps/web`, `packages/ui`                         | same major version as React                                  |
-| `drizzle-orm`                      | `packages/db`, `packages/billing`                 | same specifier                                               |
+| `drizzle-orm`                      | `packages/db`, `packages/billing`, `packages/auth` | same specifier                                              |
+| `next`                             | `apps/web`, `packages/auth`                       | same exact version; `packages/auth` peer range must include it |
 | `@types/node`                      | every package that uses it                        | major version matches the Node.js version in `.node-version` |
 
 React and Next.js are peers of each other. A Next.js release supports specific React versions, so check the supported range before upgrading either one.
@@ -142,6 +143,7 @@ Some dependencies have a single owning package. Do not import them anywhere else
 
 - `stripe`: `@startup/billing`
 - `better-auth`: `@startup/auth`
-- `drizzle-orm` and `pg`: `@startup/db`, plus the `@startup/billing` tests
+- `nodemailer`: `@startup/email`
+- `drizzle-orm` and `pg`: `@startup/db`, plus the `@startup/billing` and `@startup/auth` tests. Runtime code that needs raw SQL uses `sql` from `@startup/db`, so it shares that package's `drizzle-orm`.
 
 Use the `add-package` skill when creating or restructuring a workspace package.

@@ -1,27 +1,53 @@
 import { z } from "zod";
 
+import { emailFrom, smtpUrl } from "./email";
 import { optional } from "./optional";
 
-const serverSchema = z.object({
-  NODE_ENV: z
-    .enum(["development", "test", "production"])
-    .default("development"),
+export const serverSchema = z
+  .object({
+    NODE_ENV: z
+      .enum(["development", "test", "production"])
+      .default("development"),
 
-  DATABASE_URL: z.string().url(),
-  BETTER_AUTH_SECRET: z.string().min(32),
-  BETTER_AUTH_URL: z.string().url(),
+    DATABASE_URL: z.string().url(),
+    BETTER_AUTH_SECRET: z.string().min(32),
+    BETTER_AUTH_URL: z.string().url(),
 
-  // Billing is optional until a billing endpoint is invoked. @startup/billing
-  // raises a configuration error when a required value is missing.
-  STRIPE_SECRET_KEY: optional(z.string().regex(/^(sk|rk)_(test|live)_/)),
-  STRIPE_WEBHOOK_SECRET: optional(z.string().startsWith("whsec_")),
-  STRIPE_PRICE_PRO_MONTHLY: optional(z.string().startsWith("price_")),
+    // Billing is optional until a billing endpoint is invoked. @startup/billing
+    // raises a configuration error when a required value is missing.
+    STRIPE_SECRET_KEY: optional(z.string().regex(/^(sk|rk)_(test|live)_/)),
+    STRIPE_WEBHOOK_SECRET: optional(z.string().startsWith("whsec_")),
+    STRIPE_PRICE_PRO_MONTHLY: optional(z.string().startsWith("price_")),
 
-  // Decision models are optional until a decision is evaluated.
-  // @startup/decision raises a configuration error when a value is missing.
-  TYPESAFE_API_KEY: optional(z.string().min(1)),
-  TYPESAFE_MODEL: optional(z.string().min(1)),
-});
+    // Decision models are optional until a decision is evaluated.
+    // @startup/decision raises a configuration error when a value is missing.
+    TYPESAFE_API_KEY: optional(z.string().min(1)),
+    TYPESAFE_MODEL: optional(z.string().min(1)),
+
+    // Email is disabled when both are empty. Setting only one is an error.
+    // @startup/email raises a configuration error when sending while disabled.
+    SMTP_URL: optional(smtpUrl),
+    EMAIL_FROM: optional(emailFrom),
+  })
+  .superRefine((env, ctx) => {
+    const missing = env.SMTP_URL
+      ? env.EMAIL_FROM
+        ? undefined
+        : "EMAIL_FROM"
+      : env.EMAIL_FROM
+        ? "SMTP_URL"
+        : undefined;
+
+    if (missing) {
+      ctx.addIssue({
+        code: "custom",
+        path: [missing],
+        message: `${missing} is required when ${
+          missing === "SMTP_URL" ? "EMAIL_FROM" : "SMTP_URL"
+        } is set. Set both to enable email, or leave both empty.`,
+      });
+    }
+  });
 
 export const serverEnv = serverSchema.parse({
   NODE_ENV: process.env.NODE_ENV,
@@ -33,4 +59,6 @@ export const serverEnv = serverSchema.parse({
   STRIPE_PRICE_PRO_MONTHLY: process.env.STRIPE_PRICE_PRO_MONTHLY,
   TYPESAFE_API_KEY: process.env.TYPESAFE_API_KEY,
   TYPESAFE_MODEL: process.env.TYPESAFE_MODEL,
+  SMTP_URL: process.env.SMTP_URL,
+  EMAIL_FROM: process.env.EMAIL_FROM,
 });
