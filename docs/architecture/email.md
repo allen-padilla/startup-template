@@ -101,6 +101,12 @@ A product adds a message without changing `@startup/auth`:
 
 Product copy uses `productName` from `src/templates/brand.ts`.
 
+## Authentication Messages
+
+`@startup/auth` sends the password reset and verification messages (`passwordResetEmail`, `emailVerificationEmail`) in the background with Next.js `after()`, and reports failures without the link or token. See `authentication.md`.
+
+Other product messages that must not delay a response can do the same with `after()` from `next/server` in the route handler.
+
 ## Failures
 
 Every error extends `EmailError`. Messages never contain the connection string, credentials, the recipient, the subject, or message bodies. Errors have no `cause`, so the underlying transport error, which can contain server responses, never reaches logs or Sentry.

@@ -16,6 +16,8 @@ Sentry is the canonical runtime error and performance monitoring system.
 
 Do not send secrets, credentials, raw auth tokens, or unnecessary personal data to Sentry.
 
+Failed authentication emails are reported to Sentry from `apps/web/src/instrumentation.ts`. The reported `EmailError` never contains the link, token, recipient, or message body.
+
 ## PostHog
 
 PostHog is the canonical product analytics and feature-flag system.
@@ -25,6 +27,8 @@ Use stable application user IDs when identifying authenticated users.
 Do not use email addresses as the primary distinct ID when a stable user ID exists.
 
 Reset analytics identity on logout.
+
+Keep pages that receive a token in their URL out of analytics capture, such as the page a password reset link redirects to (`?token=…`). Do not capture pageviews or autocapture on them, or strip the token before PostHog sends the URL.
 
 ## Implementation
 

@@ -17,3 +17,7 @@ export const db = drizzle({
 export type Database = typeof db;
 
 export { schema };
+
+// Raw SQL for statements the query builder cannot express, such as atomic
+// conditional upserts. Re-exported so callers share this package's drizzle-orm.
+export { sql } from "drizzle-orm";

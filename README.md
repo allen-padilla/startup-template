@@ -30,6 +30,7 @@ New here? [Building a Product with an Agent](#building-a-product-with-an-agent) 
 | Database        | PostgreSQL 17, Drizzle ORM                    |
 | Authentication  | Better Auth                                   |
 | Billing         | Stripe                                        |
+| Email           | SMTP (Nodemailer), Mailpit locally            |
 | Observability   | Sentry, PostHog                               |
 | Testing         | Vitest, Playwright                            |
 | CI              | GitHub Actions, Dependabot                    |
@@ -40,6 +41,7 @@ New here? [Building a Product with an Agent](#building-a-product-with-an-agent) 
 flowchart LR
   browser["Browser"]
   stripe["Stripe"]
+  smtp["SMTP provider or Mailpit"]
 
   subgraph web["apps/web (Next.js)"]
     pages["Pages and components"]
@@ -51,6 +53,7 @@ flowchart LR
   subgraph packages["packages/"]
     auth["@startup/auth"]
     billing["@startup/billing"]
+    email["@startup/email"]
     db["@startup/db"]
   end
 
@@ -66,18 +69,20 @@ flowchart LR
   checkoutRoute --> billing
   webhookRoute --> billing
   auth --> db
+  auth --> email
   billing --> db
   db --> postgres
+  email -- "reset and verification" --> smtp
   billing -- "customers, checkout" --> stripe
   web -.-> observability
 
   classDef optional stroke-dasharray: 5 5
-  class stripe,observability optional
+  class stripe,smtp,observability optional
 ```
 
 The browser only talks to the Next.js application. Route handlers stay thin: they check the session, call a package, and turn errors into HTTP responses.
 
-Each integration lives in one package. `@startup/auth` is the only code that imports `better-auth`, `@startup/billing` the only code that imports `stripe`, and `@startup/db` the only code that opens a database connection.
+Each integration lives in one package. `@startup/auth` is the only code that imports `better-auth`, `@startup/billing` the only code that imports `stripe`, `@startup/email` the only code that sends email, and `@startup/db` the only code that opens a database connection.
 
 Dashed services are optional locally.
 
@@ -703,6 +708,7 @@ Run commands from the repository root.
 | `packages/billing`           | Stripe integration (`@startup/billing`)            |
 | `packages/db`                | Drizzle schema and migrations (`@startup/db`)      |
 | `packages/decision`          | bounded AI decisions (`@startup/decision`)         |
+| `packages/email`             | transactional email over SMTP (`@startup/email`)   |
 | `packages/env`               | validated environment variables (`@startup/env`)   |
 | `packages/ui`                | shared React components (`@startup/ui`)            |
 | `packages/typescript-config` | shared TypeScript configuration                    |
@@ -718,6 +724,7 @@ flowchart TD
   ui["@startup/ui"]
   db["@startup/db"]
   decision["@startup/decision"]
+  email["@startup/email"]
   env["@startup/env"]
 
   web --> auth
@@ -725,11 +732,13 @@ flowchart TD
   web --> ui
   web --> env
   auth --> db
+  auth --> email
   auth --> env
   billing --> db
   billing --> env
   db --> env
   decision --> env
+  email --> env
 ```
 
 Arrows point from a package to what it depends on. Every package also uses `@startup/typescript-config`, which is left out to keep the graph readable.

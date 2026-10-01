@@ -15,6 +15,7 @@ The model avoids depending on one vendor where it does not have to. Where a choi
 | Secrets       | the deployment platform's secret management                       |
 | Verification  | GitHub Actions, before deployment                                 |
 | Billing       | Stripe, live mode                                                 |
+| Email         | any SMTP provider or relay, optional                              |
 | Observability | Sentry and PostHog, both optional                                 |
 
 ## Application
@@ -116,7 +117,25 @@ Back up the database, or confirm that the provider's point-in-time recovery work
 
 Preview deployments have their own URLs. Each one needs a matching `BETTER_AUTH_URL`, or authentication must be treated as unavailable there.
 
-Generate `BETTER_AUTH_SECRET` separately for each environment with `openssl rand -base64 32`. Changing it invalidates existing sessions.
+Generate `BETTER_AUTH_SECRET` separately for each environment with `openssl rand -base64 32`. Changing it invalidates existing sessions and every outstanding verification link.
+
+Leave `BETTER_AUTH_TRUSTED_ORIGINS` unset. Better Auth reads it directly from the environment, and every origin in it becomes a valid redirect target for reset and verification links.
+
+### Rate Limits
+
+In production, Better Auth limits requests per client, and `@startup/auth` limits email requests per address. Both store their counters in PostgreSQL (`rate_limit`, `email_rate_limit`), so they hold across serverless instances. Apply the migrations before deploying the code that uses them.
+
+Per-client limits identify the client by the `x-forwarded-for` header. Better Auth trusts a single value as sent:
+
+- On Vercel and similar platforms, the platform sets the header, so the default works.
+- Behind your own proxy or load balancer, configure `advanced.ipAddress` in `packages/auth/src/auth.ts` (`ipAddressHeaders`, `trustedProxies`) for that proxy.
+- Never expose `next start` directly. It passes a client-supplied `x-forwarded-for` through unchanged, so clients could choose their own value and avoid the per-client limit. The per-address limit still applies.
+
+### Email
+
+Set `SMTP_URL` and `EMAIL_FROM` for a provider and a verified sender domain. See `email.md`.
+
+Authentication email is sent with Next.js `after()`, after the response. Vercel keeps the function alive until the send finishes, and `next start` sends in the same process. On a host that stops work when the response ends, sends can be lost. Failed sends are reported to Sentry when it is configured.
 
 See `authentication.md`.
 
@@ -182,6 +201,7 @@ See `continuous-integration.md`.
 5. The application is deployed.
 6. The homepage and `/api/auth/ok` respond.
 7. When billing changed, a Stripe test event reaches the webhook endpoint.
+8. When email changed, a password reset request for a test account delivers a message.
 
 ## Not Included
 

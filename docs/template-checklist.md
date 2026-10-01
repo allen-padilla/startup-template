@@ -32,6 +32,7 @@ These values identify the template or its maintainer. Replace them before the fi
   - `author`: currently `Allen`, the template maintainer
 - [ ] **`LICENSE`**: the template's MIT license, copyright Allen. MIT requires keeping this notice in copies of the template, including proprietary ones. Keep it, for example renamed to `LICENSE-TEMPLATE`, and add your own license for your project.
 - [ ] **`README.md`**: the title, the introduction, the clone command, and the closing "Maintained by Allen." line.
+- [ ] **Email sender and copy**: `EMAIL_FROM` in your environments, on a domain you own, and `productName` in `packages/email/src/templates/brand.ts`, which email subjects and footers use.
 - [ ] **Application metadata** in `apps/web/src/app/layout.tsx`: `title` and `description`, both currently about the template.
 - [ ] **Landing page** in `apps/web/src/app/page.tsx`: placeholder content.
 - [ ] **Icon** at `apps/web/src/app/favicon.ico`: the Next.js default.
@@ -50,6 +51,8 @@ These have working local defaults. Each needs a real value before the applicatio
 - [ ] **Stripe webhook endpoint**: `https://<your-domain>/api/billing/webhook`, with its signing secret in `STRIPE_WEBHOOK_SECRET`.
 - [ ] **Stripe API key**: `STRIPE_SECRET_KEY`. Use test-mode keys everywhere except production.
 - [ ] **Sentry organization and project**: `NEXT_PUBLIC_SENTRY_DSN`, and `SENTRY_ORG`, `SENTRY_PROJECT`, and `SENTRY_AUTH_TOKEN` for source maps.
+- [ ] **SMTP provider**: `SMTP_URL` for a hosted provider, Amazon SES, or your own relay. Never the local Mailpit. See `docs/architecture/email.md`.
+- [ ] **Sender domain verification**: SPF and DKIM records for the domain in `EMAIL_FROM`, plus a DMARC policy. Without them, providers reject messages or deliver them as spam.
 - [ ] **PostHog project**: `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, and `NEXT_PUBLIC_POSTHOG_HOST` for your region. The example host is the US region.
 - [ ] **Branding**: colors and fonts in `apps/web/src/app/globals.css` and `layout.tsx`, and shared components in `packages/ui`.
 
