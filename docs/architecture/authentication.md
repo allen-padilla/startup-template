@@ -95,10 +95,11 @@ Pages that send a visitor on after sign-in or sign-up take the target from a `re
 
 | Limit      | Requests                                                         | Enforced by |
 | ---------- | ---------------------------------------------------------------- | ----------- |
+| Sign-up    | 10 per hour per IP for `POST /sign-up/email`, which sends a verification email | Better Auth custom rule (`SIGN_UP_RATE_LIMIT`), `rate_limit` table |
 | Per client | 3 per 60 seconds per IP, for each endpoint that sends email      | Better Auth, `rate_limit` table |
 | Per address | 3 per hour per address, for each endpoint that sends email, whether or not the account exists | `@startup/auth` hook, `email_rate_limit` table |
 
-Both are enabled when `NODE_ENV` is `production`, including the E2E server, and both answer `429`. Better Auth's other default limits, such as sign-in and sign-up, use the same `rate_limit` table. See `deployment.md` for client IP configuration.
+All are enabled when `NODE_ENV` is `production`, including the E2E server, and all answer `429`. Better Auth's other default limits, such as 3 sign-ins per 10 seconds per IP, use the same `rate_limit` table. The sign-up limit replaces Better Auth's default for sign-up (3 per 10 seconds), which allows thousands of verification emails a day from one client. It counts every sign-up request, including rejected ones. Sign-up needs no per-address limit: a sign-up for an address that already has an account sends no email. See `deployment.md` for client IP configuration.
 
 ### When Email Is Not Configured
 

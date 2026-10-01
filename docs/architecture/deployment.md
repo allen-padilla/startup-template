@@ -123,12 +123,13 @@ Leave `BETTER_AUTH_TRUSTED_ORIGINS` unset. Better Auth reads it directly from th
 
 ### Rate Limits
 
-In production, Better Auth limits requests per client, and `@startup/auth` limits email requests per address. Both store their counters in PostgreSQL (`rate_limit`, `email_rate_limit`), so they hold across serverless instances. Apply the migrations before deploying the code that uses them.
+In production, Better Auth limits requests per client, including 10 sign-ups per hour per client, and `@startup/auth` limits email requests per address. See `authentication.md` for the limits. Both store their counters in PostgreSQL (`rate_limit`, `email_rate_limit`), so they hold across serverless instances. Apply the migrations before deploying the code that uses them.
 
 Per-client limits identify the client by the `x-forwarded-for` header. Better Auth trusts a single value as sent:
 
 - On Vercel and similar platforms, the platform sets the header, so the default works.
 - Behind your own proxy or load balancer, configure `advanced.ipAddress` in `packages/auth/src/auth.ts` (`ipAddressHeaders`, `trustedProxies`) for that proxy.
+- Clients behind one shared address, such as an office or carrier NAT, share the per-client limits, including 10 sign-ups per hour.
 - Never expose `next start` directly. It passes a client-supplied `x-forwarded-for` through unchanged, so clients could choose their own value and avoid the per-client limit. The per-address limit still applies.
 
 ### Email

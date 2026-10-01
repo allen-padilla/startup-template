@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { schema } from "@startup/db";
+import { schema, sql } from "@startup/db";
+
+import { SIGN_UP_RATE_LIMIT } from "./auth";
 
 import { withMinimumDuration } from "./minimum-duration";
 import { createTestAuth, SECRET } from "./testing/auth";
@@ -62,6 +64,73 @@ describe("rate limits", () => {
     }
 
     expect(statuses).toEqual([200, 200, 200, 429]);
+  });
+
+  it("limits sign-up to 10 per hour per client, in the rate_limit table", async () => {
+    open = t = await createTestAuth({ rateLimitEnabled: true });
+
+    const statuses = [];
+
+    for (let attempt = 1; attempt <= SIGN_UP_RATE_LIMIT.max + 1; attempt += 1) {
+      const response = await t.request("/sign-up/email", {
+        body: { name: "Ada", email: `user${attempt}@example.com`, password: "first-password-123" },
+        ip: "203.0.113.7",
+      });
+
+      statuses.push(response.status);
+    }
+
+    expect(statuses).toEqual([...Array(SIGN_UP_RATE_LIMIT.max).fill(200), 429]);
+    expect(t.sent).toHaveLength(SIGN_UP_RATE_LIMIT.max);
+
+    const [row] = await t.db
+      .select()
+      .from(schema.rateLimit)
+      .where(sql`${schema.rateLimit.key} = '203.0.113.7|/sign-up/email'`);
+
+    expect(row?.count).toBe(SIGN_UP_RATE_LIMIT.max);
+
+    // Another client is counted separately.
+    const other = await t.request("/sign-up/email", {
+      body: { name: "Ada", email: "other@example.com", password: "first-password-123" },
+      ip: "198.51.100.1",
+    });
+
+    expect(other.status).toBe(200);
+  });
+
+  it("keeps counting sign-ups for an hour", async () => {
+    open = t = await createTestAuth({ rateLimitEnabled: true });
+
+    for (let attempt = 1; attempt <= SIGN_UP_RATE_LIMIT.max; attempt += 1) {
+      await t.request("/sign-up/email", {
+        body: { name: "Ada", email: `user${attempt}@example.com`, password: "first-password-123" },
+        ip: "203.0.113.7",
+      });
+    }
+
+    // Better Auth's default for sign-up would have reset after 10 seconds.
+    await t.db
+      .update(schema.rateLimit)
+      .set({ lastRequest: Date.now() - 59 * 60 * 1000 });
+
+    const blocked = await t.request("/sign-up/email", {
+      body: { name: "Ada", email: "late@example.com", password: "first-password-123" },
+      ip: "203.0.113.7",
+    });
+
+    expect(blocked.status).toBe(429);
+
+    await t.db
+      .update(schema.rateLimit)
+      .set({ lastRequest: Date.now() - 61 * 60 * 1000 });
+
+    const allowed = await t.request("/sign-up/email", {
+      body: { name: "Ada", email: "later@example.com", password: "first-password-123" },
+      ip: "203.0.113.7",
+    });
+
+    expect(allowed.status).toBe(200);
   });
 
   it("starts a new window once the old one has passed", async () => {

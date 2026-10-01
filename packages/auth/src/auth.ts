@@ -13,6 +13,13 @@ import { reportEmailFailure, type EmailFailureReporter } from "./report";
 // Reset and verification links expire after one hour.
 const LINK_EXPIRES_IN_SECONDS = 3600;
 
+/**
+ * Per-client limit for email sign-up. Each sign-up sends a verification
+ * email, so Better Auth's default for `/sign-up/*` (3 per 10 seconds) would
+ * allow thousands a day.
+ */
+export const SIGN_UP_RATE_LIMIT = { window: 3600, max: 10 };
+
 export interface CreateAuthOptions {
   db: Database;
   secret: string;
@@ -71,6 +78,7 @@ export function createAuth(options: CreateAuthOptions) {
     // In PostgreSQL, so limits hold across serverless instances.
     rateLimit: {
       storage: "database",
+      customRules: { "/sign-up/email": SIGN_UP_RATE_LIMIT },
       ...(options.rateLimitEnabled === undefined
         ? {}
         : { enabled: options.rateLimitEnabled }),
