@@ -1,6 +1,7 @@
 // Browser-side observability. Both integrations are no-ops when their
 // NEXT_PUBLIC_* configuration is absent (e.g. local development).
 import * as Sentry from "@sentry/nextjs";
+import { scrubAuthTokens } from "@startup/auth/redact";
 import { clientEnv } from "@startup/env/client";
 import posthog from "posthog-js";
 
@@ -23,6 +24,11 @@ Sentry.init({
     cookies: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
     urlQueryParams: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
   },
+
+  // Authentication links carry tokens in their URLs, such as the reset link's
+  // path, which dataCollection does not filter. See observability.md.
+  beforeSend: scrubAuthTokens,
+  beforeSendSpan: scrubAuthTokens,
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

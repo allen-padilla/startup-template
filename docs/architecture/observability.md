@@ -18,6 +18,8 @@ Do not send secrets, credentials, raw auth tokens, or unnecessary personal data 
 
 Failed authentication emails are reported to Sentry from `apps/web/src/instrumentation.ts`. The reported `EmailError` never contains the link, token, recipient, or message body.
 
+Authentication links carry tokens in their URLs. The password reset link has its token in the path (`/api/auth/reset-password/<token>`), which `dataCollection` does not filter, and server spans record the full path in `http.target` and `url.full`. Every Sentry configuration passes errors (`beforeSend`) and spans (`beforeSendSpan`) through `scrubAuthTokens` from `@startup/auth/redact`, which replaces the reset path's token and the value of any query parameter whose name contains `token` with `[Filtered]`. Keep both hooks in every `Sentry.init`. A new URL that carries a token in its path needs a pattern in `packages/auth/src/redact.ts`.
+
 ## PostHog
 
 PostHog is the canonical product analytics and feature-flag system.

@@ -9,6 +9,7 @@ import {
 } from "@playwright/test";
 
 import { linkPath, messagesTo, waitForMessage } from "./support/mailpit";
+import { sampledTrace, sentryReceived } from "./support/sentry";
 
 const OLD_PASSWORD = "first-password-123";
 const NEW_PASSWORD = "second-password-456";
@@ -95,6 +96,46 @@ test("password reset by email sets a new password and ends existing sessions", a
   });
 
   expect(reused.status()).toBe(400);
+});
+
+test("the reset link's token never reaches Sentry", async ({ playwright, baseURL }) => {
+  const email = uniqueAddress();
+  const ip = uniqueIp();
+  const anonymous = await client(playwright, baseURL, ip);
+
+  await signUp(await client(playwright, baseURL, ip), email);
+  await anonymous.post("/api/auth/request-password-reset", {
+    data: { email, redirectTo: "/reset-password" },
+  });
+
+  // The link carries the token in its path: /api/auth/reset-password/<token>.
+  const path = linkPath(await waitForMessage(email, { subject: /reset/i }));
+  const token = new URL(path, baseURL).pathname.split("/").pop() ?? "";
+  const trace = sampledTrace();
+
+  expect(token).toBeTruthy();
+
+  const followed = await anonymous.get(path, { maxRedirects: 0, headers: trace.headers });
+
+  expect(followed.status()).toBe(302);
+
+  // Spans are sent in batches after the response. Wait for this request's.
+  await expect
+    .poll(
+      async () =>
+        (await sentryReceived()).some(
+          (body) =>
+            body.includes(trace.traceId) && body.includes("/api/auth/reset-password/"),
+        ),
+      { message: "Sentry receives the request's span", timeout: 30_000 },
+    )
+    .toBe(true);
+
+  const received = (await sentryReceived()).join("\n");
+
+  // A boolean, so a failure does not print the token or the payload.
+  expect(received.includes(token), "the token is redacted").toBe(false);
+  expect(received).toContain("/api/auth/reset-password/[Filtered]");
 });
 
 test("sign-up sends a verification link that marks the address as verified", async ({

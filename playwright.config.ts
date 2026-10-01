@@ -20,10 +20,18 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    command: "./scripts/start-e2e-server.sh",
-    url: "http://127.0.0.1:3000",
-    reuseExistingServer: false,
-    timeout: 180_000,
-  },
+  webServer: [
+    {
+      // Stands in for Sentry. `pnpm test:e2e` builds with a DSN that points here.
+      command: "node tests/e2e/support/sentry-stub.ts",
+      url: "http://127.0.0.1:9999",
+      reuseExistingServer: false,
+    },
+    {
+      command: "./scripts/start-e2e-server.sh",
+      url: "http://127.0.0.1:3000",
+      reuseExistingServer: false,
+      timeout: 180_000,
+    },
+  ],
 });

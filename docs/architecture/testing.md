@@ -48,12 +48,15 @@ The current E2E suite includes smoke coverage for:
 - authentication endpoint availability
 - billing endpoint protection (unauthenticated checkout, unsigned webhooks)
 - email (`tests/e2e/email.spec.ts`): password reset end to end, sign-up verification, identical responses for unknown addresses, and signed-in-only verification resend. The tests read delivered messages from Mailpit through `tests/e2e/support/mailpit.ts` (`MAILPIT_URL`, default `http://127.0.0.1:8025`).
+- Sentry: the reset link's token never reaches Sentry (`tests/e2e/email.spec.ts`). The test follows the link with a sampled `sentry-trace` header, so the server records its spans whatever the sample rate, and reads what Sentry received through `tests/e2e/support/sentry.ts`.
+
+`pnpm test:e2e` builds the application with `NEXT_PUBLIC_SENTRY_DSN` pointing at a Sentry stub on `127.0.0.1:9999` (`tests/e2e/support/sentry-stub.ts`), which Playwright starts with the application. E2E runs therefore never report to a real Sentry project, even when `.env.local` sets a DSN. The DSN is inlined at build time, so a build made by `pnpm test:e2e` reports to the stub until the next build.
 
 The E2E server runs in production mode, so rate limits apply. Email tests give each test its own address and its own `x-forwarded-for` client IP, so tests never share a mailbox or a rate-limit bucket. Do not raise the limits to make tests pass.
 
 Playwright runs against a production-style Next.js server for more deterministic testing.
 
-`pnpm test:e2e` builds `@startup/web` first, then Playwright starts `scripts/start-e2e-server.sh`, which `exec`s `next start` on `127.0.0.1:3000`. Playwright never reuses an existing server and stops the server when the run finishes. Because the port is fixed, only one worktree at a time may run E2E tests. See `parallel-development.md`.
+`pnpm test:e2e` builds `@startup/web` first, then Playwright starts `scripts/start-e2e-server.sh`, which `exec`s `next start` on `127.0.0.1:3000`. Playwright never reuses an existing server and stops the server when the run finishes. Playwright also starts the Sentry stub on `127.0.0.1:9999`. Because the ports are fixed, only one worktree at a time may run E2E tests. See `parallel-development.md`.
 
 ### Prerequisites
 
@@ -62,7 +65,7 @@ Playwright runs against a production-style Next.js server for more deterministic
 - `.env.local` is configured. The build validates the required server environment (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`).
 - The local database and Mailpit are running, with migrations applied: `pnpm db:up`, then `pnpm db:migrate`.
 - `.env.local` sets `SMTP_URL` and `EMAIL_FROM` to the Mailpit values from `.env.example`.
-- Port `3000` is free. Stop any development server first.
+- Ports `3000` and `9999` are free. Stop any development server first.
 - The Playwright browser is installed, once per machine: `pnpm exec playwright install chromium`. On Linux, add `--with-deps` to also install the system libraries the browser needs.
 
 `./scripts/check-environment.sh` checks the toolchain and the required environment variables without printing their values.

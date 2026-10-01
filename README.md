@@ -757,7 +757,7 @@ pnpm test:e2e    # Playwright end-to-end tests
 `pnpm test:e2e` builds the application, starts it on port `3000`, runs the tests, and stops the server. It needs:
 
 - the local database and Mailpit running (`pnpm db:up`), with migrations applied
-- port `3000` free, so stop `pnpm dev` first
+- ports `3000` and `9999` free, so stop `pnpm dev` first
 - the Playwright browser, installed once per machine:
 
 ```bash
