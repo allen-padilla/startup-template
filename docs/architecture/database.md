@@ -41,6 +41,13 @@ Billing tables (`billing_customers`, `subscriptions`) are defined in:
 
 `packages/db/src/schema/billing.ts`
 
+Rate-limit tables are defined with the tables of the code that uses them:
+
+- `rate_limit` in `packages/db/src/schema/auth.ts`: Better Auth's per-client counters (model `rateLimit`), keyed by client IP and path.
+- `email_rate_limit` in `packages/db/src/schema/email.ts`: per-address counters for requests that send email. The key is an HMAC of the endpoint and the address, so no address is stored.
+
+Both hold short-lived counters only. Losing them resets the limits and loses no other data.
+
 ## Migrations
 
 Generated Drizzle migrations live in:

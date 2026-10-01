@@ -1,6 +1,7 @@
 export {
   account,
   accountRelations,
+  rateLimit,
   session,
   sessionRelations,
   user,
@@ -13,3 +14,4 @@ export {
   subscriptions,
   subscriptionsRelations,
 } from "./billing";
+export { emailRateLimit } from "./email";

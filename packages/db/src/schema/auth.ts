@@ -1,5 +1,13 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  index,
+  integer,
+  bigint,
+} from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -72,6 +80,15 @@ export const verification = pgTable(
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
+
+// Better Auth rate-limit counters (model `rateLimit`), keyed by client IP and
+// path. Stored in PostgreSQL so limits hold across serverless instances.
+export const rateLimit = pgTable("rate_limit", {
+  id: text("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  count: integer("count").notNull(),
+  lastRequest: bigint("last_request", { mode: "number" }).notNull(),
+});
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
