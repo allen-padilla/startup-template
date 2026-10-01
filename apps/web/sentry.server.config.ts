@@ -3,6 +3,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import { scrubAuthTokens } from "@startup/auth/redact";
 import { clientEnv } from "@startup/env/client";
 
 Sentry.init({
@@ -25,4 +26,9 @@ Sentry.init({
     cookies: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
     urlQueryParams: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
   },
+
+  // Authentication links carry tokens in their URLs, such as the reset link's
+  // path, which dataCollection does not filter. See observability.md.
+  beforeSend: scrubAuthTokens,
+  beforeSendSpan: scrubAuthTokens,
 });

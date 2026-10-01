@@ -70,6 +70,7 @@ Better Auth configuration.
 - `@startup/auth` exports the server auth instance and is server-only.
 - `@startup/auth/client` exports the browser-safe auth client.
 - `@startup/auth/next` exports the server-only Next.js route handler (`authHandler`).
+- `@startup/auth/redact` exports `scrubAuthTokens`, which removes authentication tokens from data before it is sent to observability systems. It is browser-safe and has no imports.
 
 Depends on `@startup/db`, `@startup/email`, and `@startup/env`. Takes `next` as a peer dependency for `after()`.
 
