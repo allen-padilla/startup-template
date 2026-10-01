@@ -141,7 +141,7 @@ All under `apps/web/src/app/`. Each page is a server component that reads `searc
 
 `/account`, `/sign-in`, and `/sign-up` read the session, which makes them dynamic. Confirm in the build output that none is prerendered (`○`).
 
-**Landing page:** `apps/web/src/app/page.tsx` renders `<Link href="/sign-up" className={buttonVariants({ size: "lg" })}>Get Started</Link>`. Update `tests/e2e/home.spec.ts` to look for a link, so E2E stays green in this slice.
+**Landing page:** `apps/web/src/app/page.tsx` renders `<Link href="/sign-up" className={buttonVariants()}>Get Started</Link>`, at the button's default size so the page looks as before. Update `tests/e2e/home.spec.ts` to look for a link, so E2E stays green in this slice.
 
 **`apps/web/next.config.ts`**
 - Add `headers()` with `Referrer-Policy: no-referrer` for `/reset-password`.
@@ -238,7 +238,7 @@ To make the browser's Sentry pageload deterministic, send a sampled `sentry-trac
 
 - **Origin mismatch in local E2E.** Without the `BETTER_AUTH_URL` override, every browser test fails locally with `403` while CI passes. Slice 4 adds the override before any browser test.
 - **`history.replaceState` and the App Router.** Next.js supports native `replaceState` and keeps `useSearchParams` in sync, but this is the first use in the repository. Check that the form keeps its token after the URL changes. If it does not, read the token once into state before replacing the URL.
-- **PostHog session replay.** If a project enables session replay, recordings may include the page URL before the token is removed. It is not yet known whether replay data passes through `before_send` in posthog-js 1.434. Check it in Slice 3. If it does not, start PostHog with replay disabled when the first page is `/reset-password`.
+- **PostHog session replay.** Checked in Slice 3: in posthog-js 1.434 the recorder sends replay data with `capture("$snapshot", …)`, and `capture` runs `before_send` for every event, so recordings are scrubbed like other events. Scrubbing walks every string in each replay batch, which costs some browser CPU when replay is enabled.
 - **PostHog payload format.** The stub must decode PostHog's compressed bodies, or the token check passes without having seen anything. The test therefore waits for this page's `$pageview` before asserting.
 - **Sign-up reveals existing accounts.** Accepted and recorded in the spec.
 - **Rate limits in E2E.** Better Auth limits sign-in per IP. Each test uses its own IP through the fixture, and the limits are not raised.

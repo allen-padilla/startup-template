@@ -12,6 +12,17 @@ if (existsSync(localEnvFile)) {
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+
+  // The reset page receives a token in its URL. Never send that URL to other
+  // sites as a referrer. See docs/architecture/observability.md.
+  async headers() {
+    return [
+      {
+        source: "/reset-password",
+        headers: [{ key: "Referrer-Policy", value: "no-referrer" }],
+      },
+    ];
+  },
 };
 
 export default withSentryConfig(nextConfig, {

@@ -40,5 +40,9 @@ if (posthogToken && posthogHost) {
   posthog.init(posthogToken, {
     api_host: posthogHost,
     defaults: "2026-05-30",
+
+    // The reset page's first pageview carries its token in the URL, as do
+    // properties such as $initial_current_url. See observability.md.
+    before_send: (event) => (event ? scrubAuthTokens(event) : event),
   });
 }

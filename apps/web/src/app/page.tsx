@@ -1,4 +1,6 @@
-import { Button } from "@startup/ui";
+import Link from "next/link";
+
+import { buttonVariants } from "@startup/ui";
 
 export default function Home() {
   return (
@@ -14,7 +16,9 @@ export default function Home() {
           A production-oriented starting point for new applications. Replace
           this page with your own landing page when you are ready.
         </p>
-        <Button>Get Started</Button>
+        <Link href="/sign-up" className={buttonVariants()}>
+          Get Started
+        </Link>
       </div>
     </main>
   );
