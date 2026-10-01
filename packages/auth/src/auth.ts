@@ -7,7 +7,7 @@ import { serverEnv } from "@startup/env";
 
 import { runAfterResponse, type RunInBackground } from "./background";
 import { createAuthEmailCallbacks } from "./email";
-import { createEmailHooks } from "./hooks";
+import { createAuthHooks } from "./hooks";
 import { reportEmailFailure, type EmailFailureReporter } from "./report";
 
 // Reset and verification links expire after one hour.
@@ -76,7 +76,7 @@ export function createAuth(options: CreateAuthOptions) {
         : { enabled: options.rateLimitEnabled }),
     },
 
-    hooks: createEmailHooks({
+    hooks: createAuthHooks({
       emailEnabled: email !== undefined,
       db: options.db,
       secret: options.secret,

@@ -1,7 +1,10 @@
 // Shared by the authentication pages, in server and browser code.
 // See docs/specs/auth-pages.md.
 
+import { NAME_MAX_LENGTH } from "@startup/auth/name";
 import { DEFAULT_REDIRECT } from "@startup/auth/redirect";
+
+export { NAME_MAX_LENGTH, normalizeName } from "@startup/auth/name";
 
 /** Where verification links land, so `/account` can show their outcome. */
 export const VERIFY_CALLBACK = "/account?verified=1";
@@ -13,13 +16,12 @@ export const PASSWORD_CHANGED = "/sign-in?password=changed";
 export const PASSWORD_MIN_LENGTH = 8;
 export const PASSWORD_MAX_LENGTH = 128;
 
-export const NAME_MAX_LENGTH = 100;
-
 export const MESSAGES = {
   tooManyRequests: "Too many requests. Please try again later.",
   emailUnavailable: "Email isn't available right now.",
   invalidCredentials: "Invalid email or password.",
   accountExists: "An account with this email already exists.",
+  invalidName: `Enter a name of up to ${NAME_MAX_LENGTH} characters, on one line.`,
   passwordLength: `Use a password between ${PASSWORD_MIN_LENGTH} and ${PASSWORD_MAX_LENGTH} characters.`,
   passwordsDiffer: "The passwords don't match.",
   resetSent:
@@ -49,6 +51,8 @@ export function authErrorMessage(error: AuthClientError): string {
       return MESSAGES.invalidCredentials;
     case "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL":
       return MESSAGES.accountExists;
+    case "INVALID_NAME":
+      return MESSAGES.invalidName;
     case "PASSWORD_TOO_SHORT":
     case "PASSWORD_TOO_LONG":
       return MESSAGES.passwordLength;

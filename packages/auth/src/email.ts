@@ -15,9 +15,10 @@ export interface AuthEmailOptions {
   reportFailure: EmailFailureReporter;
 }
 
+// Only the address: messages to an unverified address never carry anything a
+// user typed, such as the name.
 interface Recipient {
   email: string;
-  name: string;
 }
 
 /**
@@ -42,9 +43,9 @@ export function createAuthEmailCallbacks(options: AuthEmailOptions) {
 
   return {
     sendResetPassword: ({ user, url }: { user: Recipient; url: string }) =>
-      deliver(user, () => passwordResetEmail({ name: user.name, url })),
+      deliver(user, () => passwordResetEmail({ url })),
 
     sendVerificationEmail: ({ user, url }: { user: Recipient; url: string }) =>
-      deliver(user, () => emailVerificationEmail({ name: user.name, url })),
+      deliver(user, () => emailVerificationEmail({ url })),
   };
 }

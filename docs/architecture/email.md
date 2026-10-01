@@ -82,21 +82,29 @@ await sendEmail({ to, subject, html, text });
 
 The recipient must be a single address and the subject must not contain line breaks. Invalid messages are rejected before anything is sent.
 
+## Content
+
+Nothing a user typed may appear in a message sent to an address that is not verified: no name, message, or other free text. Anyone can type someone else's address, so such text would let a stranger write to that address from the product's domain. The password reset and verification messages take only the link. Use fixed copy and, at most, values the product controls, such as `productName`.
+
+Text a user typed may appear only in messages to a verified address, and it is still escaped.
+
 ## Adding a Message
 
 A product adds a message without changing `@startup/auth`:
 
 1. Add a template in `packages/email/src/templates/`, typed as `EmailTemplate<Input>`. It returns the subject and both bodies.
-2. Build the HTML body with the `html` tagged template. It escapes every interpolated value, so user-supplied text such as names cannot inject markup. Use `assertHttpUrl` for links.
+2. Build the HTML body with the `html` tagged template. It escapes every interpolated value, so a value cannot inject markup. Use `assertHttpUrl` for links. Follow Content: a message to an address that may not be verified takes no user-typed values.
 3. Write the plain-text body with the same content.
 4. Export the template from `packages/email/src/index.ts`.
-5. Add tests next to the template: both bodies are present, the link appears in both, and user values are escaped.
+5. Add tests next to the template: both bodies are present, the link appears in both, and any user values are escaped.
 6. Call it from the owning server code:
 
    ```ts
    import { inviteEmail, sendEmail } from "@startup/email";
 
-   await sendEmail({ to: invitee.email, ...inviteEmail({ inviter: user.name, url }) });
+   // The invitee's address is not verified, so the message carries no
+   // inviter name or note, only the link.
+   await sendEmail({ to: invitee.email, ...inviteEmail({ url }) });
    ```
 
 Product copy uses `productName` from `src/templates/brand.ts`.
