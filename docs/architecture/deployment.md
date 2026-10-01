@@ -37,7 +37,7 @@ Use a managed PostgreSQL service in production. Do not run the Docker Compose da
 - Give each environment its own database. Do not share one between production and preview or staging.
 - Require TLS, as the provider recommends.
 - On serverless hosts, use the provider's pooled connection string. Each instance opens its own `pg` connection pool, so unpooled connections can exhaust the database's connection limit.
-- Never use the local credentials from `.env.example` for a database that is reachable from a network.
+- Never use the local credentials from `.env.example` for a database that is reachable from a network. For the same reason, `compose.yaml` publishes the local database on `127.0.0.1` only.
 
 ## Environment Variables
 

@@ -15,6 +15,8 @@ Local PostgreSQL runs through Docker Compose.
 - `pnpm db:logs` follows the database logs.
 - `pnpm db:studio` opens Drizzle Studio.
 
+Both services publish their ports on `127.0.0.1` only, so nothing else on the network can reach them. The local credentials are in `.env.example` and are public. Connect through `localhost` or `127.0.0.1`. An explicit IPv6 `::1` is refused. To reach the database from another machine, use an SSH tunnel rather than publishing the port.
+
 `pnpm db:up` waits for the containers' health checks. A new database takes a few seconds to initialize, and `pnpm db:migrate` fails if it runs before the database is ready.
 
 If a port is already in use, `pnpm db:up` fails with `port is already allocated`. Stop the other PostgreSQL or mail catcher that holds `5432`, `1025`, or `8025`, or find it with `ss -ltnp`.

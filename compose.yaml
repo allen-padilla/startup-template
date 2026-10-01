@@ -6,8 +6,9 @@ services:
       POSTGRES_USER: startup
       POSTGRES_PASSWORD: startup
       POSTGRES_DB: startup
+    # Loopback only, like Mailpit: the local credentials are public.
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - startup_postgres_data:/var/lib/postgresql/data
     healthcheck:
