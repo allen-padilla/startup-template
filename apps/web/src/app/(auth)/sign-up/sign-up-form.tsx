@@ -10,6 +10,7 @@ import {
   authErrorMessage,
   MESSAGES,
   NAME_MAX_LENGTH,
+  normalizeName,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   VERIFY_CALLBACK,
@@ -32,8 +33,16 @@ export function SignUpForm({
 }) {
   const [state, submit, pending] = useActionState(
     async (_: State, form: FormData): Promise<State> => {
-      const name = String(form.get("name") ?? "").trim();
+      const typed = String(form.get("name") ?? "");
       const email = String(form.get("email") ?? "");
+      const name = normalizeName(typed);
+
+      // The server enforces the same rule. Checking first keeps a request
+      // that would fail from counting against the sign-up limit.
+      if (name === undefined) {
+        return { name: typed, email, error: MESSAGES.invalidName };
+      }
+
       const { error } = await authClient.signUp.email({
         name,
         email,

@@ -12,10 +12,12 @@ import {
   pruneEmailRateLimit,
   type EmailRateLimitRule,
 } from "./email-rate-limit";
+import { NAME_MAX_LENGTH, normalizeName } from "./name";
 
 export const REQUEST_PASSWORD_RESET = "/request-password-reset";
 export const SEND_VERIFICATION_EMAIL = "/send-verification-email";
 const SIGN_UP = "/sign-up/email";
+const UPDATE_USER = "/update-user";
 
 /** Per-address limit for each endpoint that sends email. */
 export const EMAIL_RATE_LIMIT: EmailRateLimitRule = { max: 3, window: 3600 };
@@ -23,17 +25,35 @@ export const EMAIL_RATE_LIMIT: EmailRateLimitRule = { max: 3, window: 3600 };
 // Matches Better Auth's own per-client 429 message.
 const TOO_MANY_REQUESTS = "Too many requests. Please try again later.";
 
-export interface EmailHookOptions {
+export interface AuthHookOptions {
   emailEnabled: boolean;
   db: Database;
   secret: string;
   runInBackground: RunInBackground;
 }
 
-export function createEmailHooks(options: EmailHookOptions) {
+export function createAuthHooks(options: AuthHookOptions) {
   let warnedNotConfigured = false;
 
   const before = createAuthMiddleware(async (ctx) => {
+    // Better Auth accepts any string as a name at sign-up, and any value at
+    // all on update. Only sign-up requires one.
+    if (
+      ctx.path === SIGN_UP ||
+      (ctx.path === UPDATE_USER && ctx.body?.name !== undefined)
+    ) {
+      const name = normalizeName(ctx.body?.name);
+
+      if (name === undefined) {
+        throw new APIError("BAD_REQUEST", {
+          code: "INVALID_NAME",
+          message: `Name must be 1 to ${NAME_MAX_LENGTH} characters on one line.`,
+        });
+      }
+
+      return { context: { body: { ...ctx.body, name } } };
+    }
+
     if (ctx.path !== REQUEST_PASSWORD_RESET && ctx.path !== SEND_VERIFICATION_EMAIL) {
       return;
     }

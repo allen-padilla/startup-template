@@ -28,29 +28,26 @@ describe.each([
   ["email verification", emailVerificationEmail],
 ])("%s template", (_, template) => {
   it("renders a subject and both bodies containing the link", () => {
-    const email = template({ name: "Ada", url });
+    const email = template({ url });
 
     expect(email.subject).toContain(productName);
     expect(email.subject).not.toMatch(/[\r\n]/);
-    expect(email.text).toContain("Hi Ada,");
     expect(email.text).toContain(url);
-    expect(email.html).toContain("Hi Ada,");
     expect(email.html).toContain(`href="${escapeHtml(url)}"`);
   });
 
-  it("escapes user-supplied values in the HTML body", () => {
-    const email = template({
-      name: `<img src=x onerror="alert(1)">`,
-      url,
-    });
+  // The address may not belong to whoever typed the name, so the message
+  // greets without it and takes no user-supplied text at all.
+  it("greets without a name", () => {
+    const email = template({ url });
 
-    expect(email.html).not.toContain("<img");
-    expect(email.html).toContain("&lt;img src=x onerror=&quot;alert(1)&quot;&gt;");
+    expect(email.text.startsWith("Hi,\n")).toBe(true);
+    expect(email.html).toContain(">Hi,</p>");
+    expect(template({ url, name: "Ada" } as never)).toEqual(email);
   });
 
   it("escapes a link that tries to break out of its attribute", () => {
     const email = template({
-      name: "Ada",
       url: `https://example.com/"><script>alert(1)</script>`,
     });
 
@@ -59,7 +56,7 @@ describe.each([
 
   it("rejects links that are not absolute http or https URLs", () => {
     for (const link of ["javascript:alert(1)", "/reset-password", "data:text/html,x"]) {
-      expect(() => template({ name: "Ada", url: link })).toThrow(TypeError);
+      expect(() => template({ url: link })).toThrow(TypeError);
     }
   });
 });

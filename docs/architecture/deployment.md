@@ -37,7 +37,7 @@ Use a managed PostgreSQL service in production. Do not run the Docker Compose da
 - Give each environment its own database. Do not share one between production and preview or staging.
 - Require TLS, as the provider recommends.
 - On serverless hosts, use the provider's pooled connection string. Each instance opens its own `pg` connection pool, so unpooled connections can exhaust the database's connection limit.
-- Never use the local credentials from `.env.example` for a database that is reachable from a network.
+- Never use the local credentials from `.env.example` for a database that is reachable from a network. For the same reason, `compose.yaml` publishes the local database on `127.0.0.1` only.
 
 ## Environment Variables
 
@@ -123,12 +123,13 @@ Leave `BETTER_AUTH_TRUSTED_ORIGINS` unset. Better Auth reads it directly from th
 
 ### Rate Limits
 
-In production, Better Auth limits requests per client, and `@startup/auth` limits email requests per address. Both store their counters in PostgreSQL (`rate_limit`, `email_rate_limit`), so they hold across serverless instances. Apply the migrations before deploying the code that uses them.
+In production, Better Auth limits requests per client, including 10 sign-ups per hour per client, and `@startup/auth` limits email requests per address. See `authentication.md` for the limits. Both store their counters in PostgreSQL (`rate_limit`, `email_rate_limit`), so they hold across serverless instances. Apply the migrations before deploying the code that uses them.
 
 Per-client limits identify the client by the `x-forwarded-for` header. Better Auth trusts a single value as sent:
 
 - On Vercel and similar platforms, the platform sets the header, so the default works.
 - Behind your own proxy or load balancer, configure `advanced.ipAddress` in `packages/auth/src/auth.ts` (`ipAddressHeaders`, `trustedProxies`) for that proxy.
+- Clients behind one shared address, such as an office or carrier NAT, share the per-client limits, including 10 sign-ups per hour.
 - Never expose `next start` directly. It passes a client-supplied `x-forwarded-for` through unchanged, so clients could choose their own value and avoid the per-client limit. The per-address limit still applies.
 
 ### Email
@@ -138,6 +139,25 @@ Set `SMTP_URL` and `EMAIL_FROM` for a provider and a verified sender domain. See
 Authentication email is sent with Next.js `after()`, after the response. Vercel keeps the function alive until the send finishes, and `next start` sends in the same process. On a host that stops work when the response ends, sends can be lost. Failed sends are reported to Sentry when it is configured.
 
 See `authentication.md`.
+
+## Security Headers
+
+`apps/web/next.config.ts` sends these headers on every route, so they apply on any host that runs Next.js:
+
+| Header                      | Value                                          | Purpose |
+| --------------------------- | ---------------------------------------------- | ------- |
+| `X-Content-Type-Options`    | `nosniff`                                      | Browsers do not guess content types. |
+| `X-Frame-Options`           | `DENY`                                         | No other site can frame the application (older browsers). |
+| `Content-Security-Policy`   | `frame-ancestors 'none'`                       | The same for current browsers. |
+| `Referrer-Policy`           | `strict-origin-when-cross-origin`              | Other sites receive only the origin. `/reset-password` overrides it with `no-referrer`, because its URL carries a reset token (see `observability.md`). |
+| `Strict-Transport-Security` | `max-age=63072000`                             | Browsers use HTTPS for the next two years after each visit. Browsers ignore it over plain HTTP, so local development is unaffected. |
+| `Permissions-Policy`        | `camera=(), microphone=(), geolocation=()`     | The application and anything it embeds cannot use these. |
+
+When two rules match a path and set the same header, the later rule wins, so page-specific rules come after the `/:path*` rule.
+
+- Strict-Transport-Security has no `includeSubDomains` or `preload`. Add them only when every subdomain of the production domain serves HTTPS, because browsers keep the policy for its full `max-age`.
+- The Content-Security-Policy restricts only framing. There is no `script-src` policy yet: a useful one needs nonces or hashes for Next.js, Sentry, and PostHog scripts, which is a separate change.
+- A product that needs the camera, microphone, or location, or needs to be framed, changes these values in `next.config.ts`.
 
 ## Stripe
 

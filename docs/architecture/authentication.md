@@ -48,6 +48,12 @@ Server components, server actions, and route handlers read the session with `get
 
 Verification links land on `/account?verified=1` (`VERIFY_CALLBACK` in `apps/web/src/lib/auth.ts`). The page shows a confirmation only when the address is actually verified, and the invalid-link message when Better Auth adds `error`. A signed-out visitor to `/account` goes to `/sign-in` with the page's query kept as the redirect target, so the outcome survives signing in. The pages show their own copy for each error code and never the server's message.
 
+## Names
+
+The server enforces the name rule wherever a name can be set: `POST /sign-up/email` and `POST /update-user`. A name is a string of 1 to 100 characters after trimming, with no control characters or line breaks. It is stored trimmed. Anything else is rejected with `400` and the code `INVALID_NAME` before an account is created or changed. `normalizeName` and `NAME_MAX_LENGTH` come from `@startup/auth/name`, which has no imports, so the sign-up form checks the same rule before sending.
+
+The name never appears in authentication email. See Email.
+
 ## Email
 
 `@startup/auth` sends password reset and verification messages through `@startup/email`. It never opens an SMTP connection itself. Email is configured when `SMTP_URL` and `EMAIL_FROM` are both set. See `email.md`.
@@ -60,6 +66,8 @@ Verification links land on `/account?verified=1` (`VERIFY_CALLBACK` in `apps/web
 | `POST /sign-up/email`           | Also emails a verification link. Sign-up succeeds whether or not the email is sent. |
 | `POST /send-verification-email` | Emails a new verification link. Requires a session (`401` otherwise). |
 | `GET /verify-email`             | The emailed link. Marks the address as verified, then redirects to its `callbackURL`. |
+
+Reset and verification messages greet without a name and contain nothing the user typed. They go to addresses that are not verified, and anyone can sign up with someone else's address, so typed text in them would let a stranger write to that address from the product's domain.
 
 ### Sending
 
@@ -87,10 +95,11 @@ Pages that send a visitor on after sign-in or sign-up take the target from a `re
 
 | Limit      | Requests                                                         | Enforced by |
 | ---------- | ---------------------------------------------------------------- | ----------- |
+| Sign-up    | 10 per hour per IP for `POST /sign-up/email`, which sends a verification email | Better Auth custom rule (`SIGN_UP_RATE_LIMIT`), `rate_limit` table |
 | Per client | 3 per 60 seconds per IP, for each endpoint that sends email      | Better Auth, `rate_limit` table |
 | Per address | 3 per hour per address, for each endpoint that sends email, whether or not the account exists | `@startup/auth` hook, `email_rate_limit` table |
 
-Both are enabled when `NODE_ENV` is `production`, including the E2E server, and both answer `429`. Better Auth's other default limits, such as sign-in and sign-up, use the same `rate_limit` table. See `deployment.md` for client IP configuration.
+All are enabled when `NODE_ENV` is `production`, including the E2E server, and all answer `429`. Better Auth's other default limits, such as 3 sign-ins per 10 seconds per IP, use the same `rate_limit` table. The sign-up limit replaces Better Auth's default for sign-up (3 per 10 seconds), which allows thousands of verification emails a day from one client. It counts every sign-up request, including rejected ones. Sign-up needs no per-address limit: a sign-up for an address that already has an account sends no email. See `deployment.md` for client IP configuration.
 
 ### When Email Is Not Configured
 
