@@ -142,6 +142,7 @@ Some dependencies have a single owning package. Do not import them anywhere else
 
 - `stripe`: `@startup/billing`
 - `better-auth`: `@startup/auth`
+- `nodemailer`: `@startup/email`
 - `drizzle-orm` and `pg`: `@startup/db`, plus the `@startup/billing` tests
 
 Use the `add-package` skill when creating or restructuring a workspace package.

@@ -68,6 +68,16 @@ See `docs/architecture/decision-models.md`.
 - Only `@startup/decision` calls the TypeSafe API. `TYPESAFE_API_KEY` and `TYPESAFE_MODEL` are server-only.
 - Confidence thresholds are product policy. Keep them in the product code that owns the decision, not in `@startup/decision`.
 
+## Email
+
+See `docs/architecture/email.md`.
+
+- Only `@startup/email` opens SMTP connections or imports a mail library. Other code sends through it.
+- `SMTP_URL` is a server-only secret. `SMTP_URL` and `EMAIL_FROM` are set together or both left empty.
+- Message templates live in `@startup/email`, render both an HTML and a plain-text body, and escape user-supplied values.
+- Errors, logs, Sentry, and PostHog never receive message bodies, links, or tokens.
+- Tests never open network connections; inject a transport.
+
 ## API Routes
 
 - Use the `add-api-route` skill for new or materially changed route handlers.
