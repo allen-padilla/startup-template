@@ -28,6 +28,8 @@ Vitest is used for fast unit and integration-level tests.
 
 Tests should generally live close to the implementation they exercise.
 
+Unit and integration tests never open a network connection. Packages that talk to external services inject fakes. `@startup/email` and `@startup/auth` also load a setup file (`src/testing/no-network.ts`) that fails any test that tries to connect. Databases run in memory with PGlite.
+
 Example:
 
 `src/lib/utils.ts`
@@ -45,6 +47,9 @@ The current E2E suite includes smoke coverage for:
 - homepage loading
 - authentication endpoint availability
 - billing endpoint protection (unauthenticated checkout, unsigned webhooks)
+- email (`tests/e2e/email.spec.ts`): password reset end to end, sign-up verification, identical responses for unknown addresses, and signed-in-only verification resend. The tests read delivered messages from Mailpit through `tests/e2e/support/mailpit.ts` (`MAILPIT_URL`, default `http://127.0.0.1:8025`).
+
+The E2E server runs in production mode, so rate limits apply. Email tests give each test its own address and its own `x-forwarded-for` client IP, so tests never share a mailbox or a rate-limit bucket. Do not raise the limits to make tests pass.
 
 Playwright runs against a production-style Next.js server for more deterministic testing.
 
@@ -55,7 +60,8 @@ Playwright runs against a production-style Next.js server for more deterministic
 `pnpm test:e2e` and `pnpm verify:full` need all of these locally:
 
 - `.env.local` is configured. The build validates the required server environment (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`).
-- The local database is running with migrations applied: `pnpm db:up`, then `pnpm db:migrate`.
+- The local database and Mailpit are running, with migrations applied: `pnpm db:up`, then `pnpm db:migrate`.
+- `.env.local` sets `SMTP_URL` and `EMAIL_FROM` to the Mailpit values from `.env.example`.
 - Port `3000` is free. Stop any development server first.
 - The Playwright browser is installed, once per machine: `pnpm exec playwright install chromium`. On Linux, add `--with-deps` to also install the system libraries the browser needs.
 

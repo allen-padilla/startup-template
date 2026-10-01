@@ -30,7 +30,7 @@ Timeout: 15 minutes.
 
 `.github/workflows/e2e.yml`, job `Playwright`.
 
-1. Starts a PostgreSQL service container.
+1. Starts PostgreSQL and Mailpit service containers.
 2. Installs Playwright Chromium.
 3. Applies database migrations with `pnpm db:migrate`.
 4. Runs `pnpm test:e2e`, which builds `@startup/web` and runs Playwright against a production-style server.
@@ -86,6 +86,18 @@ The database is ephemeral. Each run starts empty and is discarded when the job e
 
 Only the E2E job has a database. `pnpm verify` must not require a running database. The Verify job sets `DATABASE_URL` only to satisfy build-time environment validation, and no database listens there.
 
+## Mailpit Service
+
+The E2E job also runs the Mailpit mail catcher as a service container, so the email tests can read the messages the application sends:
+
+- image: `axllent/mailpit`, pinned to the same version as `compose.yaml`
+- ports: `1025` (SMTP) and `8025` (web API) on `localhost`
+- health check: `/mailpit readyz`
+
+The job sets `SMTP_URL=smtp://localhost:1025` and `EMAIL_FROM="Startup Template <no-reply@example.com>"`. Both are safe to commit: they reach only the throwaway Mailpit on the runner, and nothing leaves it. Change the Mailpit version in `compose.yaml` and `e2e.yml` together.
+
+The Verify job leaves both email variables unset, so every pull request also proves that the application builds with email disabled.
+
 ## CI Environment Values
 
 The production build validates the required server environment through `@startup/env`. Any job that builds `@startup/web` must provide:
@@ -107,6 +119,7 @@ These values are safe to commit:
 Optional integrations stay unset in CI:
 
 - Stripe (`STRIPE_*`): billing endpoints return a configuration error, which the E2E suite exercises as endpoint protection.
+- Email in the Verify job (`SMTP_URL`, `EMAIL_FROM`): the build runs with email disabled. The E2E job sets both to Mailpit.
 - Sentry and PostHog (`NEXT_PUBLIC_SENTRY_DSN`, `NEXT_PUBLIC_POSTHOG_*`): observability is disabled.
 - Sentry source-map upload (`SENTRY_AUTH_TOKEN`): skipped.
 
