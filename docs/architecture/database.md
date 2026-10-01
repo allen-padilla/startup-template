@@ -63,9 +63,12 @@ Typical flow:
 1. Update the schema.
 2. Run `pnpm db:generate`.
 3. Review the generated SQL.
-4. Check for destructive or unintended changes.
+4. Check for destructive or unintended changes: dropped tables or columns, unexpected renames, and anything else that loses data.
 5. Run `pnpm db:migrate`.
 6. Run `pnpm verify`.
+7. Commit the schema change, the migration, and its generated metadata together.
+
+Do not edit generated migrations or their metadata by hand.
 
 ## Safety
 

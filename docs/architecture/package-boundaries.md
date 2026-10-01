@@ -26,6 +26,35 @@ Not allowed:
 
 packages → apps
 
+## Dependency Graph
+
+```mermaid
+flowchart TD
+  web["apps/web"]
+  auth["@startup/auth"]
+  billing["@startup/billing"]
+  ui["@startup/ui"]
+  db["@startup/db"]
+  decision["@startup/decision"]
+  email["@startup/email"]
+  env["@startup/env"]
+
+  web --> auth
+  web --> billing
+  web --> ui
+  web --> env
+  auth --> db
+  auth --> email
+  auth --> env
+  billing --> db
+  billing --> env
+  db --> env
+  decision --> env
+  email --> env
+```
+
+Arrows point from a package to what it depends on. Every package also uses `@startup/typescript-config`, which is left out to keep the graph readable.
+
 ## Current Packages
 
 ### @startup/typescript-config

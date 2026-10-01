@@ -32,7 +32,7 @@ These values identify the template or its maintainer. Replace them before the fi
   - `author`: currently `Allen`, the template maintainer
 - [ ] **`LICENSE`**: the template's MIT license, copyright Allen. MIT requires keeping this notice in copies of the template, including proprietary ones. Keep it, for example renamed to `LICENSE-TEMPLATE`, and add your own license for your project.
 - [ ] **`README.md`**: the title, the introduction, the clone command, and the closing "Maintained by Allen." line.
-- [ ] **Email sender and copy**: `EMAIL_FROM` in your environments, on a domain you own, and `productName` in `packages/email/src/templates/brand.ts`, which email subjects and footers use.
+- [ ] **Email sender and copy**: `EMAIL_FROM` in your environments, on a domain you own, and `productName` in `packages/email/src/templates/brand.ts`, which email subjects and footers use. When you add a message, never put text a user typed in mail to an address that is not verified. See the Content section of `docs/architecture/email.md`.
 - [ ] **Application metadata** in `apps/web/src/app/layout.tsx`: `title` and `description`, both currently about the template.
 - [ ] **Landing page** in `apps/web/src/app/page.tsx`: placeholder content.
 - [ ] **Icon** at `apps/web/src/app/favicon.ico`: the Next.js default.
@@ -40,7 +40,7 @@ These values identify the template or its maintainer. Replace them before the fi
 
 ## Configure Before Production
 
-These have working local defaults. Each needs a real value before the application serves users. See `docs/architecture/deployment.md`.
+These have working local defaults, or are left to each product. Each needs a real value or a decision before the application serves users. See `docs/architecture/deployment.md`.
 
 - [ ] **Deployment provider and project**: create the project, and set the root directory to `apps/web` where the platform asks for one.
 - [ ] **Deployment URL**: your production domain.
@@ -54,6 +54,12 @@ These have working local defaults. Each needs a real value before the applicatio
 - [ ] **SMTP provider**: `SMTP_URL` for a hosted provider, Amazon SES, or your own relay. Never the local Mailpit. See `docs/architecture/email.md`.
 - [ ] **Sender domain verification**: SPF and DKIM records for the domain in `EMAIL_FROM`, plus a DMARC policy. Without them, providers reject messages or deliver them as spam.
 - [ ] **PostHog project**: `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, and `NEXT_PUBLIC_POSTHOG_HOST` for your region. The example host is the US region.
+- [ ] **Security headers**: review the values in `apps/web/next.config.ts`. Relax `Permissions-Policy` or the framing headers only if the product needs the camera, microphone, or location, or must be embedded in another site. Add `includeSubDomains` and `preload` to `Strict-Transport-Security` only once every subdomain serves HTTPS. See `docs/architecture/deployment.md`.
+- [ ] **Client IP**: per-client rate limits, including 10 sign-ups per hour, depend on a trustworthy `x-forwarded-for`. Behind your own proxy or load balancer, configure `advanced.ipAddress` in `packages/auth/src/auth.ts`. Users behind one shared IP, such as an office NAT, share the sign-up limit. See `docs/architecture/deployment.md`.
+- [ ] **Privacy policy and terms**: the template has neither. Publish both and link them where users sign up. Say what the product collects and which services process it, such as your host, your database provider, Stripe, your SMTP provider, Sentry, and PostHog.
+- [ ] **Analytics consent**: when configured, PostHog starts on every page load and stores an identifier in a cookie and local storage (`apps/web/src/instrumentation-client.ts`). For visitors in the EU and UK, ask for consent first, and let PostHog track them or store anything only after they agree.
+- [ ] **Account deletion**: the template has no way to delete an account. Add one, and cancel the user's Stripe subscription in the same flow: deleting a user removes the local billing rows but cancels nothing in Stripe. See `docs/architecture/billing.md`.
+- [ ] **Online cancellation**: subscribers cannot cancel in the application. Give them a way to cancel online, such as Stripe's customer portal. See Known Limitations in `docs/architecture/billing.md`.
 - [ ] **Branding**: colors and fonts in `apps/web/src/app/globals.css` and `layout.tsx`, and shared components in `packages/ui`.
 
 ## Configure in GitHub
@@ -74,6 +80,8 @@ Repository settings are not part of the template.
   4. Run `pnpm verify:full`.
 - [ ] **Plan name**: the billing code assumes one paid plan, "Pro monthly". Renaming `STRIPE_PRICE_PRO_MONTHLY` or adding plans is a code change. Follow the `add-environment-variable` skill and `docs/architecture/billing.md`.
 - [ ] **Checkout paths in documentation**: `docs/architecture/parallel-development.md` uses `~/dev/startup-template` for the main checkout and `~/dev/worktrees/startup-template-<task>` for worktrees. Update them to match where your project lives.
+- [ ] **CAPTCHA on sign-up and password reset**: the per-client limit does not stop sign-ups spread across many IP addresses. Better Auth has a `captcha` plugin for Cloudflare Turnstile, Google reCAPTCHA, and hCaptcha. It needs a provider account and new environment variables: follow the `add-environment-variable` skill.
+- [ ] **A full Content-Security-Policy**: the template sends only `frame-ancestors 'none'`. A useful `script-src` policy must allow the Next.js, Sentry, and PostHog scripts by hash or by per-request nonce, and needs `connect-src` entries for the Sentry and PostHog hosts. Nonces are generated in a Next.js `proxy.ts` and make every page render dynamically. Roll it out with `Content-Security-Policy-Report-Only` first.
 - [ ] **Agent adapters**: `CLAUDE.md` points Claude Code to `AGENTS.md`. Add an equally thin adapter for any other tool your team uses, and list it in `ADAPTERS` in `scripts/check-agent-harness.mjs`. `pnpm agent:check` checks only the adapters in that list.
 
 ## Safe to Keep
@@ -82,7 +90,7 @@ These defaults are intentional. Leave them unless you have a reason to change th
 
 | Default                                                        | Where                                                       | Why it is safe                                                              |
 | -------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Local database user, password, and name `startup`              | `compose.yaml`, `.env.example`, both CI workflows           | used only by the local container and the disposable CI database             |
+| Local database user, password, and name `startup`              | `compose.yaml`, `.env.example`, both CI workflows           | used only by the local container, which `compose.yaml` publishes on `127.0.0.1` only, and the disposable CI database |
 | `postgresql://startup:startup@localhost:5432/startup`          | `.env.example`, both CI workflows                           | reaches only a local or CI database                                         |
 | `http://localhost:3000` and `http://127.0.0.1:3000`            | `.env.example`, `playwright.config.ts`, CI workflows, tests | local development and test addresses                                        |
 | Mailpit and `SMTP_URL=smtp://localhost:1025`                   | `compose.yaml`, `.env.example`                              | a local mail catcher with no authentication; never use it in production     |
