@@ -60,7 +60,7 @@ Corrected two statements in `docs/specs/auth-pages.md` that did not match Better
 
 **`packages/auth/src/next.ts`**
 - Add `getSession()`. It awaits `headers()` from `next/headers` and returns `auth.api.getSession({ headers })`, the session or `null`.
-- Wrap it in React's `cache` so a layout and a page in the same request share one lookup.
+- It is not wrapped in React's `cache`: `@startup/auth` has no React type definitions, and no planned layout reads the session, so nothing would share the lookup. Add `cache` (and `@types/react`) if a layout and a page come to need the session in the same request.
 - Export `type Session = NonNullable<Awaited<ReturnType<typeof getSession>>>`.
 - It never redirects or throws for a missing session.
 
@@ -242,7 +242,7 @@ To make the browser's Sentry pageload deterministic, send a sampled `sentry-trac
 - **PostHog payload format.** The stub must decode PostHog's compressed bodies, or the token check passes without having seen anything. The test therefore waits for this page's `$pageview` before asserting.
 - **Sign-up reveals existing accounts.** Accepted and recorded in the spec.
 - **Rate limits in E2E.** Better Auth limits sign-in per IP. Each test uses its own IP through the fixture, and the limits are not raised.
-- **`cache` in route handlers.** React `cache` deduplicates only during server component rendering. In route handlers `getSession()` runs once per call, which is correct but not deduplicated.
+- **No request deduplication.** `getSession()` queries the session on every call. Each planned page calls it once per request.
 - **Name length.** Better Auth does not limit `name`. The input sets `maxLength={100}`, and the server accepts what Better Auth accepts. Product code can add validation later.
 
 ## Verification

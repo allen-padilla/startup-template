@@ -49,7 +49,7 @@ See `docs/architecture/dependencies.md`.
 
 - Use the existing Better Auth integration in `@startup/auth`.
 - Do not create parallel authentication, session, or cookie-handling systems.
-- Authenticate server-side with `auth.api.getSession({ headers })`; never trust client-asserted identity.
+- Authenticate server-side with `getSession()` from `@startup/auth/next`; never trust client-asserted identity.
 - Client components must not import server auth, database, or secret-bearing modules.
 
 ## Billing

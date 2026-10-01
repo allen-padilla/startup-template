@@ -30,6 +30,10 @@ Better Auth is mounted at:
 
 The route handler comes from `@startup/auth/next` (`authHandler`). Applications must not import `better-auth` directly; the auth package owns the Better Auth dependency.
 
+## Sessions
+
+Server components, server actions, and route handlers read the session with `getSession()` from `@startup/auth/next`. It reads the current request's headers itself and returns the session (`user` and `session`) or `null`. It never redirects or throws: pages decide where a signed-out visitor goes, and route handlers return `401`. Do not call `auth.api.getSession` directly in applications.
+
 The template ships the authentication API only. Products build the sign-in, sign-up, password reset, and verification pages.
 
 ## Email
@@ -64,6 +68,8 @@ The page that receives a reset token has the token in its URL. Keep it out of an
 ### Redirects
 
 Reset and verification links redirect only to the `BETTER_AUTH_URL` origin or a relative path. The template configures no `trustedOrigins`; leave `BETTER_AUTH_TRUSTED_ORIGINS` unset. Better Auth skips origin checks when `NODE_ENV` is `test`, so tests of redirects set `advanced.disableOriginCheck: false`.
+
+Pages that send a visitor on after sign-in or sign-up take the target from a `redirect` query parameter and pass it through `safeRedirectPath` from `@startup/auth/redirect`. It follows only a path on the application's own origin, keeping its query and fragment, and falls back to `/account` without an error for anything else: absolute and protocol-relative URLs, backslashes, percent-encoded forms of these, control characters, and the sign-in and sign-up pages themselves. It runs in server and browser code.
 
 ### Rate Limits
 

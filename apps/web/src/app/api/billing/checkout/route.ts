@@ -1,4 +1,4 @@
-import { auth } from "@startup/auth";
+import { getSession } from "@startup/auth/next";
 import {
   AlreadySubscribedError,
   BillingConfigurationError,
@@ -7,8 +7,8 @@ import {
 
 // Starts a Stripe Checkout Session for the configured Pro monthly price.
 // The request body is ignored: the price is controlled by the server.
-export async function POST(request: Request) {
-  const session = await auth.api.getSession({ headers: request.headers });
+export async function POST() {
+  const session = await getSession();
 
   if (!session) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
