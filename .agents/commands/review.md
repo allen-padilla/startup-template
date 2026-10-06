@@ -61,6 +61,7 @@ Then read the relevant spec or plan when one exists, the relevant architecture d
 - Is code unnecessarily clever?
 - Are there duplicate abstractions?
 - Is documentation now stale?
+- When the change implements a plan slice, does the status recorded for that slice in the plan match what the change actually does?
 
 ## Verification
 

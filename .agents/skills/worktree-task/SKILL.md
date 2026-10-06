@@ -15,6 +15,7 @@ Run:
 - `git status`
 - `git branch --show-current`
 - `git worktree list`
+- `pnpm agent:status`
 
 Confirm:
 
@@ -23,7 +24,7 @@ Confirm:
 - the assigned task and its scope
 - no other active worktree or plan in `docs/plans/` owns the files or hotspots this task needs
 
-To see what another active branch changes, run `git diff --stat main...<branch>`.
+`pnpm agent:status` lists the active tasks, the hotspots each one changes, the files more than one task changes, and the status of each plan's slices. It works before dependencies are installed. To see everything another active branch changes, run `git diff --stat main...<branch>`.
 
 ## Rules
 
@@ -83,6 +84,7 @@ Before reporting complete:
 - inspect `git diff --stat` and `git diff`
 - report files changed
 - report verification results
+- report the status of the plan's slices, when a plan covers the task
 - report any overlap, hotspot changes, database state changes, and remaining concerns
 
 Do not commit unless explicitly requested.
