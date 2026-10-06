@@ -72,7 +72,11 @@ Checked against the installed source in `better-auth/dist` and `@better-auth/cor
 
 Each slice lists its files, routes, tests, skill, and verification. Every slice runs `pnpm verify`.
 
-### Slice 0: Amend the Spec (done)
+### Slice 0: Amend the Spec
+
+- Status: done
+- Branch: `docs/transactional-email-spec`
+- Pull request: #19
 
 Documentation only. Done on `docs/transactional-email-spec`, together with this plan.
 
@@ -88,6 +92,10 @@ Documentation only. Done on `docs/transactional-email-spec`, together with this 
 Skill: none. Verification: `pnpm agent:check`.
 
 ### Slice 1: Configuration and Local Mail Catcher
+
+- Status: done
+- Branch: `feat/transactional-email`
+- Pull request: #20
 
 | File | Change |
 | --- | --- |
@@ -116,6 +124,10 @@ Skill: none. Verification: `pnpm agent:check`.
   - `pnpm db:up` starts both services
 
 ### Slice 2: The `@startup/email` Package
+
+- Status: done
+- Branch: `feat/transactional-email`
+- Pull request: #20
 
 Nothing uses the package yet.
 
@@ -149,6 +161,10 @@ Nothing uses the package yet.
 
 ### Slice 3: Rate-Limit Tables
 
+- Status: done
+- Branch: `feat/transactional-email`
+- Pull request: #20
+
 | File | Change |
 | --- | --- |
 | `packages/db/src/schema/auth.ts` | `rateLimit` (`pgTable("rate_limit")`): `id` text primary key, `key` text unique not null, `count` integer not null, `last_request` bigint (`mode: "number"`) not null. The fields match Better Auth's `rateLimit` model. |
@@ -166,6 +182,10 @@ The tables are separate because Better Auth deletes `rate_limit` rows older than
 - Hotspots: `packages/db/src/schema/*` and `packages/db/drizzle/*`. Confirm that no other active task owns them.
 
 ### Slice 4: Password Reset and Verification in `@startup/auth`
+
+- Status: done
+- Branch: `feat/transactional-email`
+- Pull request: #20
 
 | File | Change |
 | --- | --- |
@@ -256,6 +276,10 @@ Verification:
 Hotspots: `pnpm-lock.yaml`.
 
 ### Slice 5: End-to-End Tests and CI
+
+- Status: done
+- Branch: `feat/transactional-email`
+- Pull request: #20
 
 | File | Change |
 | --- | --- |

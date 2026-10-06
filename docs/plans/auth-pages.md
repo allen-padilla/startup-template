@@ -49,7 +49,11 @@ Checked against the installed source in `better-auth/dist`.
 
 ## Slices
 
-### Slice 0: Amend the Spec (done)
+### Slice 0: Amend the Spec
+
+- Status: done
+- Branch: `docs/auth-pages-plan`
+- Pull request: #23
 
 Corrected two statements in `docs/specs/auth-pages.md` that did not match Better Auth 1.7.6, with the spec owner's approval:
 
@@ -57,6 +61,10 @@ Corrected two statements in `docs/specs/auth-pages.md` that did not match Better
 - Verification Links and Edge Cases: a normal verification link never returns `INVALID_USER`. A link for another account verifies that account's address, and `/account` shows the signed-in account's own state, with no confirmation unless that address is verified. List the error codes as `TOKEN_EXPIRED`, `INVALID_TOKEN`, and `USER_NOT_FOUND`, all shown as the invalid-link message.
 
 ### Slice 1: Session Helper and Redirect Rule in `@startup/auth`
+
+- Status: done
+- Branch: `feat/auth-pages`
+- Pull request: #24
 
 **`packages/auth/src/next.ts`**
 - Add `getSession()`. It awaits `headers()` from `next/headers` and returns `auth.api.getSession({ headers })`, the session or `null`.
@@ -95,6 +103,10 @@ Corrected two statements in `docs/specs/auth-pages.md` that did not match Better
 
 ### Slice 2: Form Primitives in `@startup/ui`
 
+- Status: done
+- Branch: `feat/auth-pages`
+- Pull request: #24
+
 `packages/ui/src/components/`, exported from `src/index.ts`:
 
 - `input.tsx`: `Input`, a styled `<input>` that forwards all attributes. It sets `aria-invalid` styling.
@@ -107,6 +119,10 @@ Corrected two statements in `docs/specs/auth-pages.md` that did not match Better
 Plain styling that matches `Button`. Tests render each component with `react-dom/server` (`renderToStaticMarkup`) and check the roles and the forwarded attributes. No new dependencies.
 
 ### Slice 3: Pages
+
+- Status: done
+- Branch: `feat/auth-pages`
+- Pull request: #24
 
 All under `apps/web/src/app/`. Each page is a server component that reads `searchParams` and the session, and renders a client form component (`"use client"`) that calls `authClient`. Client components import only `@startup/auth/client`, `@startup/auth/redirect`, `@startup/ui`, and `posthog-js`.
 
@@ -156,6 +172,10 @@ All under `apps/web/src/app/`. Each page is a server component that reads `searc
 **Manual check:** run `pnpm dev`, sign up, follow the verification email from Mailpit, sign out, reset the password, and confirm that every message in the spec appears.
 
 ### Slice 4: End-to-End Tests and Documentation
+
+- Status: done
+- Branch: `feat/auth-pages`
+- Pull request: #24
 
 **E2E environment**
 
