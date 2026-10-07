@@ -38,6 +38,12 @@ Timeout: 15 minutes.
 
 Timeout: 20 minutes.
 
+### Deploy
+
+`.github/workflows/deploy.yml`, job `Trigger Coolify`.
+
+Runs after Verify and E2E complete on `main`. It checks that both passed for the same commit, then calls the Coolify deploy webhook when `COOLIFY_WEBHOOK_URL` and `COOLIFY_TOKEN` exist as repository secrets, and logs that nothing is deployed otherwise. It is not a required check. See `deployment.md`.
+
 ### Shared Setup
 
 Both jobs:
@@ -133,7 +139,7 @@ When adding a new required server variable, add a safe CI value to every workflo
 
 CI must not use production secrets, credentials, or live-mode keys.
 
-- Do not add production values to GitHub Actions secrets or variables for these workflows.
+- Do not add production values to GitHub Actions secrets or variables for the Verify and E2E workflows. The Deploy workflow's `COOLIFY_WEBHOOK_URL` and `COOLIFY_TOKEN` are deployment credentials: they can only trigger a deploy, and no check depends on them.
 - Do not point CI at production or shared databases.
 - Do not use live-mode Stripe keys (`sk_live_`, `rk_live_`) in CI.
 - Required checks must pass without any repository secrets.

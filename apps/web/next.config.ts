@@ -21,8 +21,12 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
+
+  // The Dockerfile copies .next/standalone, which must include the workspace
+  // packages, so tracing starts at the repository root.
+  output: "standalone",
+  outputFileTracingRoot: resolve(process.cwd(), "../.."),
 
   // When two rules set the same header, the later one wins.
   async headers() {
