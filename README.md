@@ -14,7 +14,7 @@ It ships with the parts most products need on day one, already wired together an
 - error monitoring with Sentry and product analytics with PostHog
 - unit tests with Vitest and end-to-end tests with Playwright
 - a repository harness that tells coding agents how to work here
-- a `Dockerfile`, a health check, and a deploy workflow for Coolify or any Docker host
+- a `Dockerfile`, a health check, and a deploy job for Coolify or any Docker host
 
 Every integration except the database and authentication is optional locally. The application builds and runs without an email provider or Stripe, Sentry, or PostHog accounts.
 

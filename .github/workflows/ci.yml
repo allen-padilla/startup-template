@@ -1,4 +1,4 @@
-name: E2E
+name: CI
 
 on:
   pull_request:
@@ -10,10 +10,40 @@ permissions:
   contents: read
 
 concurrency:
-  group: e2e-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  verify:
+    name: Lint, Typecheck, Test, Build
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 15
+
+    env:
+      DATABASE_URL: postgresql://startup:startup@localhost:5432/startup
+      BETTER_AUTH_SECRET: ci-only-secret-that-is-long-enough-for-validation
+      BETTER_AUTH_URL: http://127.0.0.1:3000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify
+        run: pnpm verify
+
   e2e:
     name: Playwright
     runs-on: ubuntu-latest
@@ -87,3 +117,29 @@ jobs:
             test-results/
           if-no-files-found: ignore
           retention-days: 7
+
+  # Runs once per push to main, after both checks succeed. Without the two
+  # secrets it succeeds with a warning, so the template deploys nowhere until a
+  # project configures it. See docs/architecture/deployment.md.
+  deploy:
+    name: Trigger Coolify
+    needs: [verify, e2e]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 5
+
+    env:
+      COOLIFY_WEBHOOK_URL: ${{ secrets.COOLIFY_WEBHOOK_URL }}
+      COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+
+    steps:
+      - name: Trigger the deployment
+        run: |
+          if [ -z "$COOLIFY_WEBHOOK_URL" ] || [ -z "$COOLIFY_TOKEN" ]; then
+            echo "::warning title=Not deployed::COOLIFY_WEBHOOK_URL and COOLIFY_TOKEN are not set as repository secrets, so this commit was not deployed."
+            exit 0
+          fi
+          curl --fail --silent --show-error "$COOLIFY_WEBHOOK_URL" \
+            -H "Authorization: Bearer $COOLIFY_TOKEN"
+          echo "Deployment triggered."
