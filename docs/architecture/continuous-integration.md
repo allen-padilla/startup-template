@@ -49,7 +49,7 @@ Runs after Verify and E2E complete on `main`. It checks that both passed for the
 Both jobs:
 
 - use Node.js 24 on `ubuntu-latest`
-- enable Corepack, so pnpm resolves to the version pinned in `package.json`
+- install pnpm with `pnpm/action-setup`, which reads the version pinned in `package.json`
 - install with `pnpm install --frozen-lockfile`
 - grant the `GITHUB_TOKEN` only `contents: read`
 
