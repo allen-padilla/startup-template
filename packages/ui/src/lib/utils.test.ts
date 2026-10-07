@@ -12,6 +12,8 @@ describe("cn", () => {
   });
 
   it("ignores falsey conditional values", () => {
-    expect(cn("block", false && "hidden")).toBe("block");
+    const hidden = false as boolean;
+
+    expect(cn("block", hidden && "hidden")).toBe("block");
   });
 });

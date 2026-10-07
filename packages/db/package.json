@@ -10,6 +10,7 @@
     "./migrate": "./src/migrate.ts"
   },
   "scripts": {
+    "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -26,6 +27,7 @@
     "@types/pg": "^8.23.1",
     "dotenv": "^18.0.5",
     "drizzle-kit": "^0.31.11",
+    "eslint": "^9.39.5",
     "typescript": "^6"
   }
 }

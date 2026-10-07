@@ -9,7 +9,7 @@ The canonical local verification command is:
 It runs:
 
 - agent harness check (`pnpm agent:check`, see `agent-workflows.md`)
-- lint
+- lint, in every package: `apps/web` uses `eslint-config-next`, and the packages share the root `eslint.config.mjs`
 - TypeScript type checking
 - fast automated tests
 - production build
