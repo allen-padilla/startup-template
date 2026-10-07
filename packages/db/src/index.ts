@@ -9,6 +9,13 @@ const pool = new Pool({
   connectionString: serverEnv.DATABASE_URL,
 });
 
+// An idle connection that drops, such as on a database restart, emits `error`
+// on the pool. The pool discards it and connects again on the next query, so
+// log it instead of letting it surface as an uncaught exception.
+pool.on("error", (error) => {
+  console.error("An idle database connection failed:", error.message);
+});
+
 export const db = drizzle({
   client: pool,
   schema,
