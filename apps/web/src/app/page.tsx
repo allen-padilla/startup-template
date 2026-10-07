@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { productName } from "@startup/email/brand";
 import { buttonVariants } from "@startup/ui";
 
 export default function Home() {
@@ -7,7 +8,7 @@ export default function Home() {
     <main className="flex flex-1 items-center justify-center px-6 py-24 font-sans">
       <div className="flex w-full max-w-2xl flex-col gap-6">
         <p className="text-sm font-medium uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-          Startup Template
+          {productName}
         </p>
         <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
           Build your product, not your boilerplate.

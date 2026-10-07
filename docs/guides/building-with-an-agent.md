@@ -59,7 +59,7 @@ You own the spec and the review. The agent owns the plan, the code, and the veri
 
 Do these once per machine. An agent cannot do them for you.
 
-- Install everything in [Requirements](../../README.md#requirements): Node.js 24, pnpm, Docker, Git, and OpenSSL. On Windows, use WSL.
+- Install everything in [Requirements](../../README.md#requirements): Node.js 24, pnpm, Docker, and Git. On Windows, use WSL.
 - Install the [GitHub CLI](https://cli.github.com/) and sign in with `gh auth login`.
 - Start Docker.
 - Open your agent in the directory that will hold your projects, such as `~/dev`. On Windows, that directory must be on the Linux filesystem, not under `/mnt/c`.
@@ -75,19 +75,19 @@ allen-padilla/startup-template, and clone it into ~/dev/feedbox. Use:
 Then, inside ~/dev/feedbox:
 
 1. Read AGENTS.md and follow it for everything that follows.
-2. Follow the Quick Start in README.md: install dependencies with the frozen
-   lockfile, create .env.local from .env.example with a freshly
-   generated BETTER_AUTH_SECRET, start the database, and apply the migrations.
+2. Run pnpm setup:local, as the Quick Start in README.md says. It installs
+   dependencies, creates .env.local with a generated BETTER_AUTH_SECRET,
+   starts the database, applies the migrations, and checks the environment.
    Never print, echo, or log the secret or the contents of .env.local.
-3. Run ./scripts/check-environment.sh and fix anything it reports.
+3. Fix anything the environment check reports.
 4. Run pnpm verify.
 5. Start pnpm dev, confirm http://localhost:3000 responds, then stop it.
 
 Do not change any tracked files and do not commit. If a step fails, stop and
 show me the exact error instead of working around it.
 
-Report: each step and its result, the output of check-environment.sh, and the
-pnpm verify result.
+Report: each step and its result, the output of the environment check, and
+the pnpm verify result.
 ```
 
 A successful run ends with:
@@ -121,14 +121,14 @@ Follow docs/template-checklist.md, section "Replace Immediately":
 
 - package.json: name "feedbox", the description above, author "<your name>",
   license "UNLICENSED"
-- .github/CODEOWNERS: @<your-github-user>
 - LICENSE: keep the template's MIT notice as LICENSE-TEMPLATE, and add a
   proprietary LICENSE for Feedbox
 - README.md: title, introduction, clone command, and closing line
-- apps/web/src/app/layout.tsx: title and description
+- apps/web/src/app/layout.tsx: description
 - apps/web/src/app/page.tsx: a simple Feedbox landing page, one headline, one
   sentence, and the existing "Get Started" button to /sign-up
-- packages/email/src/templates/brand.ts: productName "Feedbox"
+- packages/email/src/templates/brand.ts: productName "Feedbox", which email
+  copy, the application title, and the landing page read
 - apps/web/README.md
 
 Keep the @startup/* package scope.
@@ -299,7 +299,7 @@ spec and plan. Do not merge it.
 
 Change the slice number, the branch name, and the named skill for each slice. Add "Run pnpm verify:full" to the prompt for slices that change sign-in, billing, routing, or a complete user workflow, such as slices 2, 3, and 5 here.
 
-The fresh session does not need to be told what is already done. `implement.md` starts by running `pnpm agent:status` and reading the status recorded in the plan. The agent sets the slice to `in-progress` when it starts and to `done` when its required verification passes. It does so on the slice's branch, so the status merges together with the code.
+The fresh session does not need to be told what is already done. `implement.md` starts by running `pnpm agent:status` and reading the status recorded in the plan. The agent sets the slice to `in-progress` when it starts. It becomes `done` in the last commit before the merge, once verification has passed and the review is clean. Both changes happen on the slice's branch, so the status merges together with the code.
 
 If a session ends before its slice is finished, start a new one in the same checkout:
 
@@ -329,7 +329,7 @@ Do not modify files. Report findings as blocker, important, or minor, and say
 whether it is ready to merge.
 ```
 
-Paste blocker and important findings back into the implementing session, or into a new one with the branch name. Merge only when the review is clean and both CI checks pass. CI may not block merging on a private repository on the GitHub Free plan, so check it yourself. See [CI](../architecture/continuous-integration.md#branch-protection).
+Paste blocker and important findings back into the implementing session, or into a new one with the branch name. When the review is clean, ask that session to set the slice to `done` and push. Merge only then, and only when both CI checks pass. CI may not block merging on a private repository on the GitHub Free plan, so check it yourself. See [CI](../architecture/continuous-integration.md#branch-protection).
 
 Repeat steps 4 and 5 for every slice.
 

@@ -10,6 +10,7 @@
     "typecheck": "turbo typecheck",
     "agent:check": "node --test \"scripts/**/*.test.mjs\" && node scripts/check-agent-harness.mjs",
     "agent:status": "node scripts/agent-status.mjs",
+    "setup:local": "./scripts/setup-local.sh",
     "verify": "pnpm agent:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
@@ -36,7 +37,10 @@
   "packageManager": "pnpm@12.6.0",
   "type": "module",
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@playwright/test": "^1.63.0",
-    "turbo": "^2.11.7"
+    "eslint": "^9.39.5",
+    "turbo": "^2.11.7",
+    "typescript-eslint": "^8.71.1"
   }
 }

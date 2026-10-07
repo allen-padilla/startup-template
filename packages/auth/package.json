@@ -12,6 +12,7 @@
     "./redirect": "./src/redirect.ts"
   },
   "scripts": {
+    "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
@@ -26,6 +27,7 @@
     "@startup/typescript-config": "workspace:*",
     "@types/node": "^24",
     "drizzle-orm": "^0.45.3",
+    "eslint": "^9.39.5",
     "next": "16.3.8",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -33,8 +35,8 @@
     "vitest": "^5.0.3"
   },
   "peerDependencies": {
+    "next": "^16.3.6",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "next": "^16.3.6"
+    "react-dom": "^19.2.8"
   }
 }

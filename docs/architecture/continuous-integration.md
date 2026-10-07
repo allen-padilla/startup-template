@@ -10,17 +10,17 @@ Continuous integration must:
 - run without production secrets or access to production systems
 - fail loudly rather than skip checks that cannot run
 
-CI runs on GitHub Actions. Workflows live in `.github/workflows/`.
+CI runs on GitHub Actions, in one workflow: `.github/workflows/ci.yml`.
 
-## Workflows
+## Jobs
 
-Both workflows run on every pull request and on pushes to `main`.
+The workflow runs on every pull request and on pushes to `main`. The Verify and E2E jobs run in parallel; the Deploy job runs after them, on `main` only.
 
 A newer run on the same ref cancels an in-progress run (`concurrency` with `cancel-in-progress`).
 
 ### Verify
 
-`.github/workflows/verify.yml`, job `Lint, Typecheck, Test, Build`.
+Job `Lint, Typecheck, Test, Build`.
 
 Runs `pnpm verify`: the agent harness check, lint, type checking, fast automated tests, and a production build.
 
@@ -28,7 +28,7 @@ Timeout: 15 minutes.
 
 ### E2E
 
-`.github/workflows/e2e.yml`, job `Playwright`.
+Job `Playwright`.
 
 1. Starts PostgreSQL and Mailpit service containers.
 2. Installs Playwright Chromium.
@@ -40,13 +40,13 @@ Timeout: 20 minutes.
 
 ### Deploy
 
-`.github/workflows/deploy.yml`, job `Trigger Coolify`.
+Job `Trigger Coolify`.
 
-Runs after Verify and E2E complete on `main`. It checks that both passed for the same commit, then calls the Coolify deploy webhook when `COOLIFY_WEBHOOK_URL` and `COOLIFY_TOKEN` exist as repository secrets, and logs that nothing is deployed otherwise. It is not a required check. See `deployment.md`.
+Runs only on pushes to `main`, after both other jobs succeed (`needs`), so it runs once per commit and never for a pull request. It calls the Coolify deploy webhook when `COOLIFY_WEBHOOK_URL` and `COOLIFY_TOKEN` exist as repository secrets. Without them it succeeds with a warning annotation on the run saying that the commit was not deployed. It is not a required check. See `deployment.md`.
 
 ### Shared Setup
 
-Both jobs:
+The Verify and E2E jobs:
 
 - use Node.js 24 on `ubuntu-latest`
 - install pnpm with `pnpm/action-setup`, which reads the version pinned in `package.json`
@@ -61,10 +61,10 @@ Keep workflow permissions least-privilege. Grant additional scopes per job, only
 
 Pull requests into `main` must pass these checks before merging. GitHub enforces this only when branch protection is available. See Branch Protection.
 
-| Check                          | Workflow | Local equivalent                  |
-| ------------------------------ | -------- | --------------------------------- |
-| `Lint, Typecheck, Test, Build` | Verify   | `pnpm verify`                     |
-| `Playwright`                   | E2E      | `pnpm test:e2e`                   |
+| Check                          | Local equivalent |
+| ------------------------------ | ---------------- |
+| `Lint, Typecheck, Test, Build` | `pnpm verify`    |
+| `Playwright`                   | `pnpm test:e2e`  |
 
 Together they match `pnpm verify:full`.
 
@@ -100,7 +100,7 @@ The E2E job also runs the Mailpit mail catcher as a service container, so the em
 - ports: `1025` (SMTP) and `8025` (web API) on `localhost`
 - health check: `/mailpit readyz`
 
-The job sets `SMTP_URL=smtp://localhost:1025` and `EMAIL_FROM="Startup Template <no-reply@example.com>"`. Both are safe to commit: they reach only the throwaway Mailpit on the runner, and nothing leaves it. Change the Mailpit version in `compose.yaml` and `e2e.yml` together.
+The job sets `SMTP_URL=smtp://localhost:1025` and `EMAIL_FROM="Startup Template <no-reply@example.com>"`. Both are safe to commit: they reach only the throwaway Mailpit on the runner, and nothing leaves it. Change the Mailpit version in `compose.yaml` and `ci.yml` together.
 
 The Verify job leaves both email variables unset, so every pull request also proves that the application builds with email disabled.
 
@@ -133,13 +133,13 @@ GitHub sets `CI=true`. Playwright uses it to forbid `test.only`, retry failed te
 
 Turbo runs in strict env mode, so a variable set by the workflow reaches the build only if `turbo.json` lists it under the build task's `env` or `passThroughEnv`.
 
-When adding a new required server variable, add a safe CI value to every workflow that builds the application. See the `add-environment-variable` skill.
+When adding a new required server variable, add a safe CI value to every job that builds the application. See the `add-environment-variable` skill.
 
 ## No Production Secrets
 
 CI must not use production secrets, credentials, or live-mode keys.
 
-- Do not add production values to GitHub Actions secrets or variables for the Verify and E2E workflows. The Deploy workflow's `COOLIFY_WEBHOOK_URL` and `COOLIFY_TOKEN` are deployment credentials: they can only trigger a deploy, and no check depends on them.
+- Do not add production values to GitHub Actions secrets or variables for the Verify and E2E jobs. The Deploy job's `COOLIFY_WEBHOOK_URL` and `COOLIFY_TOKEN` are deployment credentials: they can only trigger a deploy, and no check depends on them.
 - Do not point CI at production or shared databases.
 - Do not use live-mode Stripe keys (`sk_live_`, `rk_live_`) in CI.
 - Required checks must pass without any repository secrets.
@@ -205,8 +205,6 @@ Recommended protection for `main`:
 - block force pushes and branch deletion
 
 Do not require approvals or code-owner review while the repository has a single maintainer. GitHub does not let authors approve their own pull requests, so either setting would block every merge. Add a review requirement once there is a second maintainer.
-
-`.github/CODEOWNERS` still records ownership and requests review from the owner automatically. It lists `@allen-padilla`. Projects created from this template must replace that entry with their own user or team. See `docs/template-checklist.md`.
 
 Branch protection and rulesets are configured in GitHub repository settings, not in this repository. They are not available for private repositories on the GitHub Free plan: the API returns `403 Upgrade to GitHub Pro or make this repository public`. Until the plan or repository visibility changes, CI is advisory. The checks run and report on every pull request, but GitHub does not block merging when they fail. Do not merge a pull request with failing or pending checks.
 

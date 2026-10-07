@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document describes the intended production model. The template ships a `Dockerfile`, a server that can apply migrations when it starts, and a deploy workflow that triggers Coolify once `main` is green. The host itself is left to each project.
+This document describes the intended production model. The template ships a `Dockerfile`, a server that can apply migrations when it starts, and a deploy job that triggers Coolify once `main` is green. The host itself is left to each project.
 
 The model avoids depending on one vendor where it does not have to. The defaults are a Docker host, Coolify by default, and a managed PostgreSQL database.
 
@@ -11,7 +11,7 @@ The model avoids depending on one vendor where it does not have to. The defaults
 | Part          | Production                                                        |
 | ------------- | ----------------------------------------------------------------- |
 | Application   | `apps/web`, as the image built by the root `Dockerfile`, on Coolify or any Docker host |
-| Deployment    | `.github/workflows/deploy.yml` triggers Coolify after both checks pass on `main` |
+| Deployment    | the `Trigger Coolify` job in `.github/workflows/ci.yml`, after both checks pass on `main` |
 | Database      | managed PostgreSQL                                                |
 | Secrets       | the deployment platform's secret management                       |
 | Verification  | GitHub Actions, before deployment                                 |
@@ -213,20 +213,20 @@ See `observability.md`.
 
 ## CI Before Deploy
 
-`.github/workflows/deploy.yml` runs after the Verify and E2E workflows complete on `main`. It checks that both passed for the same commit, then calls the Coolify deploy webhook. It needs two repository secrets:
+The `Trigger Coolify` job in `.github/workflows/ci.yml` runs on pushes to `main`, after the `Lint, Typecheck, Test, Build` and `Playwright` jobs succeed, and calls the Coolify deploy webhook. It needs two repository secrets:
 
 | Secret                | Value                                                                         |
 | --------------------- | ----------------------------------------------------------------------------- |
 | `COOLIFY_WEBHOOK_URL` | the resource's deploy webhook URL, from the Webhooks page of the resource     |
 | `COOLIFY_TOKEN`       | an API token from Keys & Tokens in Coolify, with permission to deploy        |
 
-Without them the workflow logs that nothing is deployed, so a new project deploys nowhere until it is configured. Turn off Coolify's automatic deployment on push, or it deploys before the checks run.
+Without them the job succeeds with a warning annotation that the commit was not deployed, so a new project deploys nowhere until it is configured. Turn off Coolify's automatic deployment on push, or it deploys before the checks run.
 
 Require both checks in the `main` ruleset as well (see `continuous-integration.md`), so that an unverified commit cannot reach `main` at all.
 
 ## Release Checklist
 
-1. CI is green on the commit being deployed, and the Deploy workflow triggered Coolify.
+1. CI is green on the commit being deployed, and the `Trigger Coolify` job triggered Coolify.
 2. New environment variables are set on the host.
 3. Migrations are reviewed and compatible with the currently deployed version.
 4. The deployment finished, and the container log shows `Migrations applied.` when `RUN_MIGRATIONS` is set.

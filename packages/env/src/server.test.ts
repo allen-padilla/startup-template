@@ -51,6 +51,34 @@ describe("email configuration", () => {
     ).toBe(true);
   });
 
+  it("rejects a local mail catcher for an application that is not local", () => {
+    const deployed = { ...required, BETTER_AUTH_URL: "https://app.example.com" };
+
+    for (const url of ["smtp://localhost:1025", "smtp://127.0.0.1:1025"]) {
+      const result = serverSchema.safeParse({
+        ...deployed,
+        SMTP_URL: url,
+        EMAIL_FROM: sender,
+      });
+
+      expect(result.success, url).toBe(false);
+      expect(result.error?.message).toContain("local mail catcher");
+    }
+
+    expect(
+      serverSchema.safeParse({ ...deployed, SMTP_URL: smtpUrl, EMAIL_FROM: sender })
+        .success,
+    ).toBe(true);
+    expect(
+      serverSchema.safeParse({
+        ...required,
+        BETTER_AUTH_URL: "http://127.0.0.1:3000",
+        SMTP_URL: "smtp://localhost:1025",
+        EMAIL_FROM: sender,
+      }).success,
+    ).toBe(true);
+  });
+
   it("rejects one variable without the other and names the missing one", () => {
     const withoutSender = errorText({ SMTP_URL: smtpUrl });
 

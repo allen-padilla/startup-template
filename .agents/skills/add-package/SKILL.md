@@ -24,7 +24,7 @@ Inspect `packages/env`, `packages/billing`, and `packages/ui` before choosing a 
 - ship TypeScript source with no build step: `exports` maps entry points directly to `./src/*.ts`
 - expose a `.` entry point and add subpath entry points only for a distinct audience, such as `./client` for browser-safe code or `./next` for Next.js adapters
 - have a `tsconfig.json` that extends `@startup/typescript-config/base.json` with `noEmit: true`
-- define `typecheck: tsc --noEmit`, and `test: vitest run` only when they contain tests
+- define `lint: eslint` (the root `eslint.config.mjs` applies) and `typecheck: tsc --noEmit`, and `test: vitest run` only when they contain tests
 
 If an existing package does something differently, follow the existing package and report the discrepancy.
 
@@ -54,7 +54,7 @@ If an existing package does something differently, follow the existing package a
 5. Create `tsconfig.json` extending `@startup/typescript-config/base.json`, with `noEmit: true` and `include` covering `src/`. Server packages add `"types": ["node"]` (see `packages/env/tsconfig.json`). Add `jsx` and DOM `lib` settings only for React packages (see `packages/ui/tsconfig.json`).
 
 6. Add scripts that Turbo will pick up by name.
-   - Always add `typecheck`.
+   - Always add `lint` and `typecheck`, with `eslint` in `devDependencies`.
    - Add `test` only when the package has tests. If the tests import `@startup/env` directly or indirectly, provide a deterministic test env in `vitest.config.ts` (see `packages/billing/vitest.config.ts`).
    - Do not add placeholder scripts, and do not add `turbo.json` entries or `outputs` for tasks that produce no artifacts.
 

@@ -13,7 +13,7 @@ Dependency management must:
 
 Use pnpm only. Do not use npm, yarn, or bun to install or update dependencies.
 
-The pnpm version is pinned in the root `package.json` (`packageManager` and `devEngines.packageManager`). Any pnpm 10 or newer downloads and runs that exact version, because `devEngines.packageManager.onFail` is `download`, and CI installs it with `pnpm/action-setup`. Change the pin deliberately, in its own change.
+The pnpm version is pinned in the root `package.json` (`packageManager` and `devEngines.packageManager`). Any pnpm 11 or newer downloads and runs that exact version, because `devEngines.packageManager.onFail` is `download` (pnpm reads `devEngines.packageManager` from 11.0.0, and `allowBuilds` in `pnpm-workspace.yaml` from 10.26.0), and CI installs it with `pnpm/action-setup`. Change the pin deliberately, in its own change.
 
 Only one lockfile and one workspace file exist, both in the repository root. Do not create a nested `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `package-lock.json`, or `yarn.lock`.
 

@@ -333,4 +333,22 @@ describe("renderStatus", () => {
     assert.match(text, /^ {2}hotspot package\.json: feat\/a, feat\/b$/m);
     assert.match(text, /^Notes$/m);
   });
+
+  it("prints the notes recorded for a slice", (t) => {
+    const { root } = checkout(t, {
+      "docs/plans/feedbox.md": [
+        "# Feedbox",
+        "",
+        "### Slice 1: Boards",
+        "",
+        "- Status: blocked",
+        "- Notes: waiting for a price ID",
+        "",
+      ].join("\n"),
+    });
+
+    const text = renderStatus(collectStatus({ root }));
+
+    assert.match(text, /^ {4}slice 1 {2}blocked {2}note: waiting for a price ID$/m);
+  });
 });

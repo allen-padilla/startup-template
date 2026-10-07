@@ -29,7 +29,7 @@ Both are server-only, validated by `@startup/env`, and optional:
 
 Neither variable is read at build time, so neither is listed in `turbo.json`.
 
-`.env.example` points both at the local mail catcher, so the Quick Start sends working email without edits. Replace both before deploying: a deployment that still points at `smtp://localhost:1025` fails every send with a delivery error.
+`.env.example` points both at the local mail catcher, so the Quick Start sends working email without edits. Replace both before deploying. A deployment whose `BETTER_AUTH_URL` is not local and whose `SMTP_URL` still points at `localhost` fails validation at start, instead of failing every send.
 
 ### Connection Strings
 

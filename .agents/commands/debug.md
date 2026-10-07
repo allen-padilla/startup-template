@@ -30,5 +30,3 @@ Return:
 - fix
 - verification
 - any unresolved concerns
-
-Do not commit unless explicitly requested.

@@ -46,7 +46,34 @@ export const serverSchema = z
         } is set. Set both to enable email, or leave both empty.`,
       });
     }
+
+    // .env.example points SMTP_URL at the local mail catcher. Copied to a
+    // deployment, that passes validation and then fails every send, so a
+    // deployed application may not send mail through a loopback host.
+    if (
+      env.SMTP_URL &&
+      isLoopbackUrl(env.SMTP_URL) &&
+      !isLoopbackUrl(env.BETTER_AUTH_URL)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["SMTP_URL"],
+        message:
+          "SMTP_URL points at a local mail catcher, but BETTER_AUTH_URL is not local. Set a real SMTP provider, or leave SMTP_URL and EMAIL_FROM empty.",
+      });
+    }
   });
+
+// False for a value that is not a URL: the field's own validator reports that.
+function isLoopbackUrl(value: string) {
+  try {
+    const { hostname } = new URL(value);
+
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
+  } catch {
+    return false;
+  }
+}
 
 export const serverEnv = serverSchema.parse({
   NODE_ENV: process.env.NODE_ENV,
