@@ -121,14 +121,14 @@ Follow docs/template-checklist.md, section "Replace Immediately":
 
 - package.json: name "feedbox", the description above, author "<your name>",
   license "UNLICENSED"
-- .github/CODEOWNERS: @<your-github-user>
 - LICENSE: keep the template's MIT notice as LICENSE-TEMPLATE, and add a
   proprietary LICENSE for Feedbox
 - README.md: title, introduction, clone command, and closing line
-- apps/web/src/app/layout.tsx: title and description
+- apps/web/src/app/layout.tsx: description
 - apps/web/src/app/page.tsx: a simple Feedbox landing page, one headline, one
   sentence, and the existing "Get Started" button to /sign-up
-- packages/email/src/templates/brand.ts: productName "Feedbox"
+- packages/email/src/templates/brand.ts: productName "Feedbox", which email
+  copy, the application title, and the landing page read
 - apps/web/README.md
 
 Keep the @startup/* package scope.

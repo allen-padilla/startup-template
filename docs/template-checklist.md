@@ -16,7 +16,7 @@ The template keeps three kinds of names separate:
 
 - Give every product its own name. A product maintained by Allen may add a "by Allen" attribution, such as "RepoGuide by Allen". The product name itself stays independent: "RepoGuide", not "Allen RepoGuide".
 - Customize the product metadata for each project. The "Startup Template" values are placeholders, not a brand.
-- The GitHub owner `@allen-padilla` is the maintainer's GitHub account, which is separate from the display brand. It appears in `.github/CODEOWNERS` and in documentation.
+- The GitHub owner `@allen-padilla` is the maintainer's GitHub account, which is separate from the display brand. It appears in documentation.
 - `@startup/*` is an intentional reusable template scope. It names the template, not a brand. Keep it unless you rename it deliberately (see [Optional](#optional)).
 - If you reuse the template and you are not Allen, replace the maintainer values and the GitHub owner with your own.
 
@@ -24,7 +24,6 @@ The template keeps three kinds of names separate:
 
 These values identify the template or its maintainer. Replace them before the first real commit.
 
-- [ ] **`.github/CODEOWNERS`**: replace `@allen-padilla` with your own user or team, unless the new repository is also owned by that account. Until you do, GitHub requests review from someone outside your project, or reports an invalid owner.
 - [ ] **Root `package.json`**:
   - `name`: currently `startup-template`
   - `description`
@@ -32,8 +31,9 @@ These values identify the template or its maintainer. Replace them before the fi
   - `author`: currently `Allen`, the template maintainer
 - [ ] **`LICENSE`**: the template's MIT license, copyright Allen. MIT requires keeping this notice in copies of the template, including proprietary ones. Keep it, for example renamed to `LICENSE-TEMPLATE`, and add your own license for your project.
 - [ ] **`README.md`**: the title, the introduction, the clone command, and the closing "Maintained by Allen." line.
-- [ ] **Email sender and copy**: `EMAIL_FROM` in your environments, on a domain you own, and `productName` in `packages/email/src/templates/brand.ts`, which email subjects and footers use. When you add a message, never put text a user typed in mail to an address that is not verified. See the Content section of `docs/architecture/email.md`.
-- [ ] **Application metadata** in `apps/web/src/app/layout.tsx`: `title` and `description`, both currently about the template.
+- [ ] **Product name**: `productName` in `packages/email/src/templates/brand.ts`. Email subjects and footers, the application title, and the landing page read it.
+- [ ] **Email sender**: `EMAIL_FROM` in your environments, on a domain you own. When you add a message, never put text a user typed in mail to an address that is not verified. See the Content section of `docs/architecture/email.md`.
+- [ ] **Application description** in `apps/web/src/app/layout.tsx`: `description`, currently about the template.
 - [ ] **Landing page** in `apps/web/src/app/page.tsx`: placeholder content.
 - [ ] **Icon** at `apps/web/src/app/favicon.ico`: the Next.js default.
 - [ ] **`apps/web/README.md`**: mentions the template by name.

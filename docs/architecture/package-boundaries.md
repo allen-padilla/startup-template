@@ -43,6 +43,7 @@ flowchart TD
   web --> ui
   web --> env
   web --> db
+  web --> email
   auth --> db
   auth --> email
   auth --> env
@@ -117,6 +118,9 @@ See `billing.md`.
 
 Transactional email over SMTP: `sendEmail`, `createEmailSender`, typed message templates, and `Email*` errors.
 
-Server-only. Owns the `nodemailer` dependency. Depends on `@startup/env`. The only code that opens an SMTP connection.
+- `@startup/email` is server-only.
+- `@startup/email/brand` exports `productName`, the one place the product name is set. It has no imports and is browser-safe.
+
+Owns the `nodemailer` dependency. Depends on `@startup/env`. The only code that opens an SMTP connection.
 
 See `email.md`.

@@ -196,6 +196,9 @@ importers:
       '@startup/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@startup/email':
+        specifier: workspace:*
+        version: link:../../packages/email
       '@startup/env':
         specifier: workspace:*
         version: link:../../packages/env

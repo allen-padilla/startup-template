@@ -264,12 +264,12 @@ What each product decides for itself:
 
 After creating a project from this template, replace these values first:
 
-- `.github/CODEOWNERS`: the owner is `@allen-padilla`, the template maintainer
 - `package.json`: `name`, `description`, `license`, and `author`
 - `LICENSE`: keep the template's notice and add your own license; see [License](#license)
 - this README: the title, the introduction, the clone command, and the closing maintainer line
-- `EMAIL_FROM` and `productName` in `packages/email/src/templates/brand.ts`: the email sender and the product name in email copy
-- `apps/web/src/app/layout.tsx` and `page.tsx`: the application title, description, and landing page
+- `productName` in `packages/email/src/templates/brand.ts`: the product name, read by email copy, the application title, and the landing page
+- `EMAIL_FROM` in each environment: the email sender
+- `apps/web/src/app/layout.tsx` and `page.tsx`: the application description and the landing page
 - `apps/web/src/app/favicon.ico`: the icon
 - Stripe, your SMTP provider, Sentry, and PostHog: your own accounts, products, and projects
 
