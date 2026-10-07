@@ -59,7 +59,7 @@ You own the spec and the review. The agent owns the plan, the code, and the veri
 
 Do these once per machine. An agent cannot do them for you.
 
-- Install everything in [Requirements](../../README.md#requirements): Node.js 24, pnpm, Docker, Git, and OpenSSL. On Windows, use WSL.
+- Install everything in [Requirements](../../README.md#requirements): Node.js 24, pnpm, Docker, and Git. On Windows, use WSL.
 - Install the [GitHub CLI](https://cli.github.com/) and sign in with `gh auth login`.
 - Start Docker.
 - Open your agent in the directory that will hold your projects, such as `~/dev`. On Windows, that directory must be on the Linux filesystem, not under `/mnt/c`.
@@ -75,19 +75,19 @@ allen-padilla/startup-template, and clone it into ~/dev/feedbox. Use:
 Then, inside ~/dev/feedbox:
 
 1. Read AGENTS.md and follow it for everything that follows.
-2. Follow the Quick Start in README.md: install dependencies with the frozen
-   lockfile, create .env.local from .env.example with a freshly
-   generated BETTER_AUTH_SECRET, start the database, and apply the migrations.
+2. Run pnpm setup:local, as the Quick Start in README.md says. It installs
+   dependencies, creates .env.local with a generated BETTER_AUTH_SECRET,
+   starts the database, applies the migrations, and checks the environment.
    Never print, echo, or log the secret or the contents of .env.local.
-3. Run ./scripts/check-environment.sh and fix anything it reports.
+3. Fix anything the environment check reports.
 4. Run pnpm verify.
 5. Start pnpm dev, confirm http://localhost:3000 responds, then stop it.
 
 Do not change any tracked files and do not commit. If a step fails, stop and
 show me the exact error instead of working around it.
 
-Report: each step and its result, the output of check-environment.sh, and the
-pnpm verify result.
+Report: each step and its result, the output of the environment check, and
+the pnpm verify result.
 ```
 
 A successful run ends with:

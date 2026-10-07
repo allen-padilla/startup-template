@@ -43,7 +43,6 @@ The template lives at [github.com/allen-padilla/startup-template](https://github
 - **pnpm 11 or newer**, installed once with any method on [pnpm.io/installation](https://pnpm.io/installation), such as `npm install -g pnpm`. Every command then runs the exact pnpm version pinned in `package.json`, downloaded on first use. Older pnpm releases do not read that pin.
 - **Docker**, or a compatible runtime that provides `docker compose`, for the local PostgreSQL database and Mailpit.
 - **Git.**
-- **OpenSSL**, to generate a local secret. Most systems already have it.
 
 On Windows, work inside WSL and keep the repository on the Linux filesystem.
 
@@ -59,20 +58,13 @@ Then set up and start the application:
 
 ```bash
 cd my-app
-
-pnpm install --frozen-lockfile
-
-cp .env.example .env.local
-sed -i.bak "s|^BETTER_AUTH_SECRET=.*|BETTER_AUTH_SECRET=$(openssl rand -base64 32)|" .env.local && rm .env.local.bak
-
-pnpm db:up
-pnpm db:migrate
+pnpm setup:local
 pnpm dev
 ```
 
 Open <http://localhost:3000>. Email sent by the application is captured by the local mail catcher, Mailpit, at <http://localhost:8025>.
 
-The `sed` line writes a freshly generated secret into `.env.local` without printing it. Every other value copied from `.env.example` already works for local development.
+`pnpm setup:local` installs the dependencies from the lockfile, creates `.env.local` from `.env.example` with a freshly generated `BETTER_AUTH_SECRET` that it never prints, starts PostgreSQL and Mailpit, and applies the migrations. Every other value in `.env.example` already works for local development. The script is safe to run again and keeps an existing `.env.local`.
 
 To check your setup at any point, run `./scripts/check-environment.sh`. It verifies the Node.js version, pnpm, installed dependencies, the required environment variables, that `SMTP_URL` and `EMAIL_FROM` are set together, and Docker. It changes nothing and never prints a value.
 
@@ -90,7 +82,7 @@ They are validated when the application builds and starts. A missing or invalid 
 
 Any variable that starts with `NEXT_PUBLIC_` is compiled into the browser bundle and is public. Never put a secret behind that prefix. Everything else stays on the server.
 
-Generate a new `BETTER_AUTH_SECRET` for every environment with `openssl rand -base64 32`. Do not reuse one between projects, and do not use the CI placeholder outside CI.
+`pnpm setup:local` generates the local `BETTER_AUTH_SECRET`. Generate a new one for every other environment, for example with `openssl rand -base64 32`. Do not reuse one between projects, and do not use the CI placeholder outside CI.
 
 ## How It Fits Together
 
@@ -184,6 +176,7 @@ Run commands from the repository root.
 
 | Command            | What it does                                                                                     |
 | ------------------ | ------------------------------------------------------------------------------------------------ |
+| `pnpm setup:local` | one-time setup: dependencies, `.env.local` with a generated secret, database, migrations        |
 | `pnpm dev`         | starts the Next.js development server on <http://localhost:3000>                                 |
 | `pnpm db:up`       | starts PostgreSQL (`5432`) and Mailpit (`1025`, `8025`) on `127.0.0.1`, waits until ready        |
 | `pnpm db:down`     | stops and removes the containers; the data volume is kept                                        |

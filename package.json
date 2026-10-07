@@ -10,6 +10,7 @@
     "typecheck": "turbo typecheck",
     "agent:check": "node --test \"scripts/**/*.test.mjs\" && node scripts/check-agent-harness.mjs",
     "agent:status": "node scripts/agent-status.mjs",
+    "setup:local": "./scripts/setup-local.sh",
     "verify": "pnpm agent:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
