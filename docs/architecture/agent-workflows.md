@@ -4,7 +4,7 @@
 
 This repository includes a tool-agnostic harness for coding agents. It tells an agent what the repository's invariants are, which procedures to follow for known task types, how to approach a task depending on its mode, where a task currently stands, and how to prove the work is correct.
 
-The harness is plain Markdown under `AGENTS.md`, `.agents/`, and `docs/`. Tool-specific entry points such as `CLAUDE.md` are thin adapters that point back to `AGENTS.md`; they must not become a second source of truth.
+The guidance is plain Markdown under `AGENTS.md`, `.agents/`, and `docs/`. Two commands, backed by scripts in `scripts/` that need no dependencies, work on it: `pnpm agent:check` checks its structure, and `pnpm agent:status` reports where the work stands. Tool-specific entry points such as `CLAUDE.md` are thin adapters that point back to `AGENTS.md`; they must not become a second source of truth.
 
 ## Layers
 
@@ -91,15 +91,15 @@ Each kind of state has one source:
 
 Only the status in a plan is written by hand. Git and the checks are facts. When they disagree with the record, they win (see [Precedence](#precedence)), and the record is corrected.
 
-Nothing is recorded twice. A plan's own status is not stored: it follows from its slices.
+A plan's own status is not stored. It follows from its slices, so the two cannot disagree. A slice's branch can also appear in the plan's optional `Ownership` section. The list below the slice's heading is the one that `pnpm agent:status` and `pnpm agent:check` read.
 
 ### Life of a Slice
 
 1. `pending`: planned, not started.
 2. `in-progress`: a session has started it on the named branch.
-3. `done`: its required verification has passed. Never earlier.
+3. `done`: its required verification has passed.
 
-A slice can also be `blocked` or `dropped`. `docs/plans/README.md` defines the format and the rules for keeping it current.
+A slice can also be `blocked` or `dropped`. `docs/plans/README.md` defines the format. The Task State section of `.agents/rules/repository.md` has the rules for keeping a status current.
 
 Status changes travel with the work. They are made on the branch that does the work, so `main` shows what has merged and a task branch shows that task's progress. Each slice keeps its status below its own heading, so slices that are worked on at the same time merge without conflicts. A session that ends in the middle of a slice leaves it `in-progress`, with the work on its branch or in its worktree, and the next session continues from there.
 

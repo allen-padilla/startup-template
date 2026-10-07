@@ -42,12 +42,7 @@ A plan records where its work stands, so a new session does not depend on an ear
 
 The plan's own status is not written down. It follows from the slices: planned until a slice starts, done once every slice is `done` or `dropped`, and in progress in between. `pnpm agent:status` shows it.
 
-Keep it current:
-
-- Set a slice to `in-progress` when work on it starts. Set it to `done` only after its required verification passes.
-- Change the status on the same branch as the work, so the state and the code merge together. `main` then shows what has merged, and a task branch shows its own progress. `pnpm agent:status` shows both.
-- Change only the status of your own slice. Each status sits below its own heading, so slices that are worked on at the same time merge without conflicts.
-- If the recorded status and the repository disagree, the repository is right. Correct the status and report the difference.
+This section defines the format. The rules for keeping a status current are in the Task State section of `.agents/rules/repository.md`.
 
 `pnpm agent:check` fails when a slice has no status directly below its heading, a status is not one of the values above, an `in-progress` slice names no branch, two headings name the same slice, a plan without slices has no status below its title, or a plan with slices also has one there. It checks the format, not whether the status is true. See `docs/architecture/agent-workflows.md`.
 

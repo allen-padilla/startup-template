@@ -116,13 +116,14 @@ Limits:
 
 ## Task State
 
-See the Task State section of `docs/architecture/agent-workflows.md`.
+See the Task State section of `docs/architecture/agent-workflows.md` for how the parts fit together, and `docs/plans/README.md` for how a plan records status.
 
 - The status recorded in a plan in `docs/plans/` says where that work stands. A conversation does not.
 - Start a task by reading the state: run `pnpm agent:status`, then check it against `git status` and the branch's commits.
 - When the record and the repository disagree, the repository is right. Correct the record and report the difference.
-- Set a slice to `done` only after its required verification passes.
-- Change a slice's status on the same branch as the work it describes.
+- Set a slice to `in-progress` when work on it starts, and to `done` only after its required verification passes.
+- Change a slice's status on the same branch as the work it describes, so the state and the code merge together.
+- Change only the status of your own slice.
 
 ## Completion
 
