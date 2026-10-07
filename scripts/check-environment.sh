@@ -13,6 +13,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 readonly REQUIRED_NODE_MAJOR=24
+# devEngines.packageManager, which downloads the pinned pnpm, needs pnpm 11.
+readonly REQUIRED_PNPM_MAJOR=11
 readonly ENV_FILE=".env.local"
 
 failures=0
@@ -60,7 +62,12 @@ else
 fi
 
 if command -v pnpm >/dev/null 2>&1; then
-  pass "pnpm is available"
+  pnpm_major="$(pnpm --version 2>/dev/null | cut -d. -f1)"
+  if [ "${pnpm_major:-0}" -ge "$REQUIRED_PNPM_MAJOR" ] 2>/dev/null; then
+    pass "pnpm $REQUIRED_PNPM_MAJOR or newer is available"
+  else
+    fail "pnpm $REQUIRED_PNPM_MAJOR or newer is required to run the pinned version, found major version ${pnpm_major:-unknown}. Update it: npm install -g pnpm"
+  fi
 else
   fail "pnpm is not available. Install it once (for example: npm install -g pnpm). See https://pnpm.io/installation"
 fi

@@ -39,8 +39,8 @@ The template lives at [github.com/allen-padilla/startup-template](https://github
 
 ### Requirements
 
-- **Node.js 24.** `.node-version` pins it for version managers such as fnm and nvm.
-- **pnpm 10 or newer**, installed once with any method on [pnpm.io/installation](https://pnpm.io/installation), such as `npm install -g pnpm`. Every command then runs the exact pnpm version pinned in `package.json`, downloaded on first use.
+- **Node.js 24.** `.node-version` and `.nvmrc` pin it for version managers such as fnm and nvm.
+- **pnpm 11 or newer**, installed once with any method on [pnpm.io/installation](https://pnpm.io/installation), such as `npm install -g pnpm`. Every command then runs the exact pnpm version pinned in `package.json`, downloaded on first use. Older pnpm releases do not read that pin.
 - **Docker**, or a compatible runtime that provides `docker compose`, for the local PostgreSQL database and Mailpit.
 - **Git.**
 - **OpenSSL**, to generate a local secret. Most systems already have it.

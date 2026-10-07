@@ -30,7 +30,6 @@ Both files live in the repository root. The application and the database tooling
 | --------------------------------------------------------------- | -------- | ------------- | --------------------------------------------- |
 | `DATABASE_URL`                                                  | yes      | server        | PostgreSQL connection string                  |
 | `RUN_MIGRATIONS`                                                | no       | server        | `true` applies migrations at server start     |
-| `NEXT_PUBLIC_APP_URL`                                           | no       | browser       | reserved; not yet read by the application     |
 | `BETTER_AUTH_SECRET`                                            | yes      | server secret | signs sessions; at least 32 characters        |
 | `BETTER_AUTH_URL`                                               | yes      | server        | base URL of the application                   |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`                    | no       | server secret | billing; use Stripe test mode locally         |
