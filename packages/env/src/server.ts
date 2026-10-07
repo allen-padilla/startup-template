@@ -3,15 +3,26 @@ import { z } from "zod";
 import { emailFrom, smtpUrl } from "./email";
 import { optional } from "./optional";
 
+// A URL whose scheme is one of `protocols`. `z.url()` alone accepts any scheme,
+// so an https: database URL or an ftp: application URL would pass and fail later.
+function urlWithProtocol(protocols: string[]) {
+  return z
+    .string()
+    .url()
+    .refine((value) => protocols.includes(new URL(value).protocol), {
+      message: `must be a ${protocols.map((p) => p.slice(0, -1)).join(" or ")} URL`,
+    });
+}
+
 export const serverSchema = z
   .object({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
 
-    DATABASE_URL: z.string().url(),
+    DATABASE_URL: urlWithProtocol(["postgres:", "postgresql:"]),
     BETTER_AUTH_SECRET: z.string().min(32),
-    BETTER_AUTH_URL: z.string().url(),
+    BETTER_AUTH_URL: urlWithProtocol(["http:", "https:"]),
 
     // Set by a single-instance host so the server applies migrations when it
     // starts. See docs/architecture/deployment.md.

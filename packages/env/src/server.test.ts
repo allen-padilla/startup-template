@@ -23,6 +23,37 @@ function errorText(email: { SMTP_URL?: string; EMAIL_FROM?: string }) {
   return result.error?.message ?? "";
 }
 
+describe("required URLs", () => {
+  it("accepts the local and CI values", () => {
+    expect(serverSchema.safeParse(required).success).toBe(true);
+    expect(
+      serverSchema.safeParse({
+        ...required,
+        DATABASE_URL: "postgres://startup:startup@localhost:5432/startup",
+        BETTER_AUTH_URL: "https://app.example.com",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("rejects a URL with the wrong scheme", () => {
+    const database = serverSchema.safeParse({
+      ...required,
+      DATABASE_URL: "https://db.example.com/startup",
+    });
+
+    expect(database.success).toBe(false);
+    expect(database.error?.message).toContain("postgres or postgresql URL");
+
+    const auth = serverSchema.safeParse({
+      ...required,
+      BETTER_AUTH_URL: "ftp://app.example.com",
+    });
+
+    expect(auth.success).toBe(false);
+    expect(auth.error?.message).toContain("http or https URL");
+  });
+});
+
 describe("email configuration", () => {
   it("is disabled when both variables are empty or unset", () => {
     for (const email of [{}, { SMTP_URL: "", EMAIL_FROM: "" }]) {
