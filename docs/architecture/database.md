@@ -70,6 +70,8 @@ Typical flow:
 
 Do not edit generated migrations or their metadata by hand.
 
+A product with a deployed database never rewrites committed migration history; it adds migrations. The template itself squashed its scaffold history once. A local database created from the older history then fails `pnpm db:migrate` with `relation "account" already exists`. Recreate it: `pnpm db:down`, then `docker compose down -v` (this deletes the local data), then `pnpm db:up && pnpm db:migrate`.
+
 ## Safety
 
 Generated migrations must be reviewed before application.
