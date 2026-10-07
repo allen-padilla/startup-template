@@ -198,7 +198,7 @@ Run commands from the repository root.
 | `pnpm agent:check` | checks the structure of the agent harness, such as skill frontmatter, referenced paths, and plan status |
 | `pnpm agent:status` | shows where the work stands: plan and slice status, active branches and worktrees, and overlaps  |
 
-Run `pnpm verify` before considering any change complete. Also run `pnpm verify:full` when a change affects application behavior or a complete user workflow, such as authentication, billing, or routing. Documentation-only changes do not need it.
+Run `pnpm verify` before considering any change complete. The Verification section of [AGENTS.md](AGENTS.md) says when `pnpm verify:full` is also required.
 
 `pnpm test:e2e` needs the local database and Mailpit running (`pnpm db:up`) with migrations applied, and ports `3000` and `9999` free, so stop `pnpm dev` first. Install the Playwright browser once per machine with `pnpm exec playwright install chromium`. On Linux, add `--with-deps` to also install the system libraries the browser needs. See [docs/architecture/testing.md](docs/architecture/testing.md).
 

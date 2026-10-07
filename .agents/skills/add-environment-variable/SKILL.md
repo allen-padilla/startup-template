@@ -73,7 +73,7 @@ Use this skill whenever a task introduces a new environment variable or changes 
 
     `pnpm verify`
 
-    Also run `pnpm verify:full` for changes affecting significant application behavior or complete user workflows, including authentication, billing, routing, and other cross-system or user-facing behavior.
+    Also run `pnpm verify:full` when the Verification section of `AGENTS.md` requires it.
 
 ## Report
 

@@ -1,22 +1,20 @@
 # Repository Rules
 
-These rules apply to all substantive work in this repository. They add operational detail to the invariants in `AGENTS.md` and must not contradict it. See `docs/architecture/agent-workflows.md` for precedence.
+These rules apply to all substantive work in this repository. They add operational detail to the invariants in `AGENTS.md` and must not contradict it. See `docs/architecture/agent-workflows.md` for precedence. Each rule is stated once, here or in `AGENTS.md`; other documents point to it.
 
 ## General
 
-- Read `AGENTS.md` before making changes.
 - Read relevant files before editing them.
 - Prefer existing patterns over introducing new abstractions.
-- Keep changes scoped to the requested task.
-- Do not modify unrelated files.
+- Keep changes scoped to the requested task. Do not modify unrelated files.
 - Do not commit unless explicitly requested.
 
 ## Architecture
 
 - Applications may depend on packages. Packages must not depend on applications.
 - Import other packages only through their public `exports` entry points, never through internal `src/` paths.
-- Read relevant documentation in `docs/architecture/` before structural or cross-package changes.
-- When a change alters documented architecture, update the relevant architecture doc in the same change.
+- Client components must not import server auth, database, server-only environment modules, or secret-bearing modules. Do not move server code into client components merely to make an import work.
+- Read relevant documentation in `docs/architecture/` before structural or cross-package changes. When a change alters documented architecture, update the relevant architecture doc in the same change.
 
 ## Dependencies
 
@@ -32,43 +30,45 @@ See `docs/architecture/dependencies.md`.
 
 ## Environment
 
-- Never commit or print secret values.
-- Treat all `NEXT_PUBLIC_*` variables as public.
-- Server code reads `@startup/env`; browser code reads `@startup/env/client`. Client code must not import `@startup/env` directly or transitively.
+- Never commit or print secret values. `.env.example` documents supported variables with placeholders or safe local examples only. Local secrets belong in the ignored `.env.local`.
+- Treat all `NEXT_PUBLIC_*` variables as public. Server secrets must never use that prefix.
+- Server code reads `@startup/env`; browser code reads `@startup/env/client`. Client code must not import `@startup/env` directly or transitively. Avoid scattering direct `process.env` access in application code.
 - Do not weaken environment validation to make builds pass.
 - Use the `add-environment-variable` skill for new or changed variables.
 
 ## Database
 
+- Database code lives in `packages/db`, with schema definitions in `packages/db/src/schema/`.
 - Schema changes must use the `database-migration` skill.
-- Generate migrations with `pnpm db:generate`; do not hand-write or hand-edit generated migrations unless the migration workflow requires repairing migration state.
-- Review generated SQL before applying it.
-- Stop and report on unexplained destructive SQL.
+- Generate migrations with `pnpm db:generate`; do not hand-write or hand-edit generated migrations or their metadata unless the migration workflow requires repairing migration state.
+- Review generated SQL before applying it. Stop and report on unexplained destructive SQL.
+- Never run destructive production database operations unless the task explicitly authorizes a reviewed production procedure.
 
 ## Authentication
 
-- Use the existing Better Auth integration in `@startup/auth`.
+- Use the existing Better Auth integration in `@startup/auth`. Browser-safe code uses `@startup/auth/client`.
 - Do not create parallel authentication, session, or cookie-handling systems.
 - Authenticate server-side with `getSession()` from `@startup/auth/next`; never trust client-asserted identity.
-- Client components must not import server auth, database, or secret-bearing modules.
+- Authentication schema changes use the database migration workflow.
 
 ## Billing
 
-- Server Stripe functionality belongs in `@startup/billing`.
-- Stripe secrets are server-only.
-- Entitlement rules belong in `@startup/billing`.
-- Do not infer paid access from checkout redirects.
-- Verified webhook-synchronized state is authoritative.
+- Stripe server code lives in `@startup/billing`. Do not import `stripe` elsewhere.
+- `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are server-only.
+- Price IDs come from server configuration. Never treat a client-supplied price ID as authoritative.
+- Subscription state comes only from verified Stripe webhooks. Checkout redirects never grant paid access. Webhook handlers verify signatures over the raw body and are idempotent.
+- Decide paid access with `getUserEntitlement` from `@startup/billing`. Do not interpret subscription statuses elsewhere.
+- Use Stripe test mode for development and testing. See `docs/architecture/billing.md`.
 
 ## Email
 
 See `docs/architecture/email.md`.
 
-- Only `@startup/email` opens SMTP connections or imports a mail library. Other code sends through it.
+- Only `@startup/email` opens SMTP connections or imports a mail library. Other code sends through it. Do not import `nodemailer` elsewhere.
 - `SMTP_URL` is a server-only secret. `SMTP_URL` and `EMAIL_FROM` are set together or both left empty.
-- Message templates live in `@startup/email`, render both an HTML and a plain-text body, and escape user-supplied values.
+- Message templates live in `@startup/email`, render both an HTML and a plain-text body, and escape user-supplied values with its `html` template tag.
 - Errors, logs, Sentry, and PostHog never receive message bodies, links, or tokens.
-- Tests never open network connections; inject a transport.
+- Tests never open network connections; inject a transport. Mailpit is for local development and CI only.
 
 ## API Routes
 
@@ -79,14 +79,18 @@ See `docs/architecture/email.md`.
 
 - Sentry and PostHog must not receive secrets, credentials, raw auth tokens, or unnecessary personal data.
 - Observability must remain optional for local development unless the architecture explicitly changes.
+- Use stable authenticated user IDs when identifying users in analytics.
+
+## Generated and Tool-Managed Files
+
+Do not manually edit generated files or tool-managed sections unless the task specifically requires it: generated Drizzle migration metadata, tool-managed blocks such as the Turborepo block in `AGENTS.md` and the Next.js block in `apps/web/AGENTS.md`, and generated framework files. When a tool owns a marked section, preserve the section boundaries.
 
 ## Testing and Verification
 
+- Vitest runs the fast unit and integration tests, Playwright the end-to-end tests, and Node's built-in test runner the harness scripts in `scripts/`.
+- Prefer tests that validate externally meaningful behavior over implementation-detail assertions.
 - Do not delete, skip, or weaken tests to make a change pass.
-- Prefer externally meaningful behavior over implementation-detail assertions.
-- Run targeted tests for the affected package first.
-- `pnpm verify` is required before considering implementation complete.
-- Also run `pnpm verify:full` for changes affecting significant application behavior or complete user workflows, including authentication, billing, routing, and other cross-system or user-facing behavior. Documentation-only changes do not require it.
+- Run targeted tests for the affected package first, then the verification that the Verification section of `AGENTS.md` requires.
 
 ## Durable Knowledge
 
@@ -124,18 +128,14 @@ Before reporting completion:
 1. Run the required verification.
 2. When the task implements a plan slice, update that slice's status in the plan, then run `pnpm agent:check`.
 3. Review the diff (`git status`, `git diff --stat`, `git diff`).
-4. Check for accidental or generated files.
-5. Check for secret exposure.
-6. Report what changed, verification results, and any remaining concerns.
-
-Do not commit unless explicitly requested.
+4. Check for accidental or generated files, and for secret exposure.
+5. Report what changed, verification results, and any remaining concerns.
 
 ## CI
 
 - Do not weaken GitHub Actions or required checks to make a change pass.
 - Keep CI aligned with repository commands such as `pnpm verify` and `pnpm test:e2e`.
-- Never place production secrets directly in workflow files.
-- Use disposable test values and GitHub secrets only when necessary.
+- Never place production secrets directly in workflow files. Use disposable test values, and GitHub secrets only when necessary.
 
 ## Parallel Work
 
@@ -144,11 +144,8 @@ Follow the `worktree-task` skill. See `docs/architecture/parallel-development.md
 - When parallel work is active, each task has one branch, one worktree, and one primary owner.
 - The main checkout stays on `main` and coordinates: creating worktrees, reviewing branches, merging, and cleanup.
 - Small tasks with no parallel work may still follow the normal small-task flow in the main checkout.
-- Do not edit files outside the assigned task scope merely because they are nearby.
-- Before modifying a shared hotspot, check whether another active task owns it. `pnpm agent:status` lists the hotspots each active task changes.
-- If two active tasks require the same files or schema, report the overlap instead of racing.
+- Before modifying a shared hotspot, check whether another active task owns it. `pnpm agent:status` lists the hotspots each active task changes. If two active tasks require the same files or schema, report the overlap instead of racing.
 - Only one active task may own schema and migration changes at a time.
 - `package.json` files and `pnpm-lock.yaml` are shared dependency hotspots. Regenerate the lockfile with `pnpm install` rather than hand-merging it.
-- With the current local infrastructure, database migrations and E2E runs (`pnpm test:e2e`, `pnpm verify:full`) are serialized across worktrees: they share the local database and port `3000`.
-- Do not merge another feature branch into your task branch unless explicitly instructed.
-- Integration happens through the normal PR workflow. Do not commit or merge unless explicitly requested.
+- Database migrations and E2E runs (`pnpm test:e2e`, `pnpm verify:full`) are serialized across worktrees: they share the local database and port `3000`.
+- Do not merge another feature branch into your task branch unless explicitly instructed. Integration happens through the normal PR workflow.

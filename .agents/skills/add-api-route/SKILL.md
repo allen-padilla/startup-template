@@ -76,7 +76,7 @@ Domain logic belongs in the owning `@startup/*` package, exposed through that pa
 
     `pnpm verify`
 
-    Also run `pnpm verify:full` for changes affecting significant application behavior or complete user workflows, including authentication, billing, routing, and other cross-system or user-facing behavior. New or changed API routes usually qualify.
+    Also run `pnpm verify:full` when the Verification section of `AGENTS.md` requires it. New or changed API routes usually qualify.
 
 12. Review `git diff` for unrelated edits, server code reachable from client code, and secret exposure.
 

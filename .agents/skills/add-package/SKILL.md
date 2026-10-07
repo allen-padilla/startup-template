@@ -80,7 +80,7 @@ If an existing package does something differently, follow the existing package a
 
     `pnpm verify`
 
-    Also run `pnpm verify:full` when the package changes significant application behavior or complete user workflows, including authentication, billing, routing, and other cross-system or user-facing behavior.
+    Also run `pnpm verify:full` when the Verification section of `AGENTS.md` requires it.
 
 ## Report
 

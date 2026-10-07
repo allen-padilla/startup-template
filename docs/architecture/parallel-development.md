@@ -257,7 +257,7 @@ git diff main...feat/<task>
 git log --oneline main..feat/<task>
 ```
 
-Use the repository `review` command (`.agents/commands/review.md`) or the `reviewer` role for a full review. Verification reflects the checked-out working tree, so run `pnpm verify` inside the task worktree, not in the main checkout.
+Use the repository `review` command (`.agents/commands/review.md`) for a full review. Verification reflects the checked-out working tree, so run `pnpm verify` inside the task worktree, not in the main checkout.
 
 ## Cleanup
 
