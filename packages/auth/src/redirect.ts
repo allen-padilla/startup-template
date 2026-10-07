@@ -33,8 +33,14 @@ export function safeRedirectPath(
   const url = new URL(value, BASE);
   if (url.origin !== BASE) return fallback;
 
-  const page = decode(url.pathname)?.replace(/\/+$/, "");
-  if (page === undefined || AUTH_PAGES.has(page)) return fallback;
+  // Resolving dot segments can still produce `//host`: `/.//evil.com` becomes
+  // `//evil.com`, which a browser reads as another origin. Check the result too.
+  const page = decode(url.pathname);
+  if (page === undefined || !isPlainPath(url.pathname) || !isPlainPath(page)) {
+    return fallback;
+  }
+
+  if (AUTH_PAGES.has(page.replace(/\/+$/, ""))) return fallback;
 
   return `${url.pathname}${url.search}${url.hash}`;
 }

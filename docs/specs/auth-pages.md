@@ -62,8 +62,8 @@ These are already decided. Change them here before planning, not during implemen
 ### Redirect Target
 
 - `/sign-in` and `/sign-up` read an optional `redirect` query parameter.
-- It is accepted only as a relative path on the application's own origin: it starts with a single `/`, and resolving it against the application's origin leaves the origin unchanged.
-- Anything else falls back to `/account` without an error. That includes absolute URLs (`https://…`), protocol-relative URLs (`//host`), backslash forms (`/\host`, `\\host`), percent-encoded forms of these, values without a leading `/`, `javascript:` and other schemes, and values containing control characters.
+- It is accepted only as a relative path on the application's own origin: it starts with a single `/`, resolving it against the application's origin leaves the origin unchanged, and the resolved path still starts with a single `/`.
+- Anything else falls back to `/account` without an error. That includes absolute URLs (`https://…`), protocol-relative URLs (`//host`), backslash forms (`/\host`, `\\host`), percent-encoded forms of these, paths whose dot segments resolve to one of these (`/.//host`), values without a leading `/`, `javascript:` and other schemes, and values containing control characters.
 - A target that is itself `/sign-in` or `/sign-up` also falls back to `/account`, so redirects cannot loop.
 - The path, query, and fragment of an accepted target are kept.
 

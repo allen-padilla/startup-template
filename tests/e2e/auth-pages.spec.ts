@@ -236,6 +236,7 @@ test("sign-in follows only safe redirect targets", async ({ page, newVisitor }) 
     ["//example.com", "/account"],
     ["/\\example.com", "/account"],
     ["%2F%2Fexample.com", "/account"],
+    ["/.//example.com", "/account"],
     ["/account?x=1", "/account?x=1"],
   ];
 
