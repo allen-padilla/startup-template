@@ -96,7 +96,6 @@ These defaults are intentional. Leave them unless you have a reason to change th
 | Mailpit and `SMTP_URL=smtp://localhost:1025`                   | `compose.yaml`, `.env.example`                              | a local mail catcher with no authentication; never use it in production     |
 | `ci-only-secret-that-is-long-enough-for-validation`            | both CI workflows                                           | a placeholder that only satisfies validation; never use it anywhere else    |
 | Test secrets in `packages/billing`                             | `vitest.config.ts` and test files                           | placeholders; the tests never contact Stripe or a real database             |
-| Test API key in `packages/decision`                            | test files                                                  | a placeholder; the tests never contact TypeSafe                             |
 | `@startup/*` package names                                     | every package                                               | internal and private                                                        |
 | Node.js 24 and the pinned pnpm version                         | `.node-version`, `package.json`, CI workflows               | change them deliberately and together                                       |
 

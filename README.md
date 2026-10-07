@@ -11,12 +11,11 @@ It ships with the parts most products need on day one, already wired together an
 - authentication with Better Auth, with sign-up, sign-in, password reset, and account pages
 - transactional email over SMTP for password reset and email verification, caught locally by Mailpit
 - subscription billing with Stripe
-- bounded AI decisions, such as classification and scoring, with `@startup/decision`
 - error monitoring with Sentry and product analytics with PostHog
 - unit tests with Vitest and end-to-end tests with Playwright
 - a repository harness that tells coding agents how to work here
 
-Every integration except the database and authentication is optional locally. The application builds and runs without an email provider or Stripe, TypeSafe, Sentry, or PostHog accounts.
+Every integration except the database and authentication is optional locally. The application builds and runs without an email provider or Stripe, Sentry, or PostHog accounts.
 
 The template lives at [github.com/allen-padilla/startup-template](https://github.com/allen-padilla/startup-template) and is set up as a GitHub template repository. New here? [Building a Product with an Agent](docs/guides/building-with-an-agent.md) walks an example product from cloning the template to shipping features, with a prompt for every step.
 
@@ -31,7 +30,6 @@ The template lives at [github.com/allen-padilla/startup-template](https://github
 | Authentication  | Better Auth                                   |
 | Billing         | Stripe                                        |
 | Email           | SMTP (Nodemailer), Mailpit locally            |
-| Decision models | TypeSafe System One                           |
 | Observability   | Sentry, PostHog                               |
 | Testing         | Vitest, Playwright                            |
 | CI              | GitHub Actions, Dependabot                    |
@@ -142,7 +140,7 @@ flowchart LR
 
 The browser only talks to the Next.js application. Route handlers stay thin: they check the session or the webhook signature, call a package, and turn errors into HTTP responses.
 
-Each integration lives in one package. `@startup/auth` is the only code that imports `better-auth`, `@startup/billing` the only code that imports `stripe`, `@startup/email` the only code that sends email, `@startup/decision` the only code that calls TypeSafe, and `@startup/db` the only code that opens a database connection.
+Each integration lives in one package. `@startup/auth` is the only code that imports `better-auth`, `@startup/billing` the only code that imports `stripe`, `@startup/email` the only code that sends email, and `@startup/db` the only code that opens a database connection.
 
 Dashed services are optional locally. For how a payment becomes paid access, see [A Subscription, End to End](docs/architecture/billing.md#a-subscription-end-to-end).
 
@@ -170,7 +168,6 @@ The pages are deliberately minimal. Products restyle or replace them and keep th
 | `packages/auth`              | Better Auth server and client (`@startup/auth`)                |
 | `packages/billing`           | Stripe integration (`@startup/billing`)                        |
 | `packages/db`                | Drizzle schema and migrations (`@startup/db`)                  |
-| `packages/decision`          | bounded AI decisions (`@startup/decision`)                     |
 | `packages/email`             | transactional email over SMTP (`@startup/email`)               |
 | `packages/env`               | validated environment variables (`@startup/env`)               |
 | `packages/ui`                | shared React components (`@startup/ui`)                        |
@@ -255,7 +252,6 @@ What each product decides for itself:
 | [Authentication](docs/architecture/authentication.md)                              | How do sessions, the pages, email links, and rate limits work?                                      |
 | [Email](docs/architecture/email.md)                                                | How do I configure SMTP and add a message?                                                          |
 | [Billing](docs/architecture/billing.md)                                            | How do checkout and webhooks work, and what decides paid access?                                    |
-| [Decision models](docs/architecture/decision-models.md)                            | When do I use `@startup/decision` instead of code or a generative model?                            |
 | [Observability](docs/architecture/observability.md)                                | How are Sentry and PostHog set up, and what must they never receive?                                |
 | [Testing](docs/architecture/testing.md)                                            | What do `pnpm verify` and the end-to-end tests cover, and what do E2E runs need?                    |
 | [Continuous integration](docs/architecture/continuous-integration.md)              | What runs on every pull request, and why do the checks not block merging on a private Free-plan repository? |

@@ -1,8 +1,0 @@
-{
-  "extends": "@startup/typescript-config/base.json",
-  "compilerOptions": {
-    "types": ["node"],
-    "noEmit": true
-  },
-  "include": ["src/**/*.ts", "vitest.config.ts"]
-}

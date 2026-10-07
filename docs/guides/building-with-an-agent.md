@@ -19,7 +19,7 @@ The walkthrough has three stages:
 - Team members sign in and see every submission for their boards in an **inbox**, where they can mark each item as new, planned, or done.
 - The free plan allows one board. The **Pro** plan allows unlimited boards.
 
-Later stages add CSV export, automatic tagging with `@startup/decision`, and a weekly email digest.
+Later stages add CSV export, team invitations, and a weekly email digest.
 
 Feedbox is only an example. Nothing in the template refers to it.
 
@@ -369,8 +369,8 @@ Once the base exists, each new feature goes through the same loop at the size it
 | Change                                                         | Path                                          | Example                         |
 | -------------------------------------------------------------- | --------------------------------------------- | ------------------------------- |
 | small and obvious, touches a few files                         | one prompt, straight to implement             | CSV export                      |
-| new behavior, new data, or anything security-sensitive         | spec, plan, slices, review                    | automatic tagging               |
-| several features at the same time                              | one worktree per feature                      | weekly digest alongside tagging |
+| new behavior, new data, or anything security-sensitive         | spec, plan, slices, review                    | team invitations                |
+| several features at the same time                              | one worktree per feature                      | weekly digest alongside invites |
 | something is broken                                            | debug mode                                    | inbox shows the wrong count     |
 
 ### Example A: A Small Feature (CSV Export)
@@ -389,21 +389,21 @@ request. Do not merge it.
 
 No spec is needed. The prompt itself is small enough to be the spec.
 
-### Example B: A Bigger Feature (Automatic Tagging)
+### Example B: A Bigger Feature (Team Invitations)
 
-Feedbox should tag each submission as a bug, a feature request, a question, or praise. That is a bounded decision with a fixed set of answers, which is what `@startup/decision` is for. See [docs/architecture/decision-models.md](../architecture/decision-models.md).
+Feedbox should let a board owner invite teammates by email, so several people can triage one inbox. That is new behavior, new data, and an authorization change, so it gets the full loop.
 
 Run the full loop:
 
-1. **Spec.** "Write docs/specs/feedback-tagging.md. Each new submission is tagged bug, feature request, question, or praise. Low-confidence results are left untagged. Owners can change a tag by hand. Tagging never blocks or slows down a submission. If the model is not configured or fails, the submission is saved untagged."
-2. **Plan.** "Follow .agents/commands/plan.md for docs/specs/feedback-tagging.md, and save it to docs/plans/feedback-tagging.md. Use `@startup/decision`; read docs/architecture/decision-models.md first."
-3. **Implement.** One slice at a time, as in stage 2. Adding a `tag` column goes through the `database-migration` skill.
-4. **Configure.** Set `TYPESAFE_API_KEY` and `TYPESAFE_MODEL` in `.env.local` yourself. They are already declared in `.env.example`. A feature that needs a variable the template does not have yet uses the `add-environment-variable` skill.
+1. **Spec.** "Write docs/specs/team-invitations.md. A board owner invites a teammate by email. The invitation link expires after 7 days and works once. An invited member sees the board's inbox and can change statuses, but cannot invite others or delete the board. Only verified addresses receive invitations. Say what happens when the invitee has no account yet."
+2. **Plan.** "Follow .agents/commands/plan.md for docs/specs/team-invitations.md, and save it to docs/plans/team-invitations.md. Send the invitation through `@startup/email`; read docs/architecture/email.md first."
+3. **Implement.** One slice at a time, as in stage 2. The `invitations` and `board_members` tables go through the `database-migration` skill, and every inbox query now filters by membership instead of ownership.
+4. **Configure.** Nothing new: the invitation email goes through the SMTP settings that already exist. A feature that needs a variable the template does not have yet uses the `add-environment-variable` skill.
 5. **Review** in a fresh session, then merge.
 
 ### Example C: Two Features at Once (Worktrees)
 
-To build the weekly email digest while tagging is still in progress, give each feature its own worktree, as described in [Parallel Development](../architecture/parallel-development.md):
+To build the weekly email digest while team invitations are still in progress, give each feature its own worktree, as described in [Parallel Development](../architecture/parallel-development.md):
 
 ```text
 Follow the worktree-task skill.
@@ -412,7 +412,7 @@ Create a worktree at ~/dev/worktrees/feedbox-weekly-digest on a new branch
 feat/weekly-digest from origin/main, and set it up there.
 
 Implement docs/plans/weekly-digest.md in that worktree only. Another agent is
-working on feat/feedback-tagging and owns the database schema and migrations
+working on feat/team-invitations and owns the database schema and migrations
 right now. If this feature needs a schema change, stop and tell me instead
 of making it.
 
@@ -466,11 +466,11 @@ feedbox/
 ├── docs/
 │   ├── specs/
 │   │   ├── feedbox-core.md
-│   │   ├── feedback-tagging.md
+│   │   ├── team-invitations.md
 │   │   └── weekly-digest.md
 │   └── plans/
 │       ├── feedbox-core.md
-│       ├── feedback-tagging.md
+│       ├── team-invitations.md
 │       └── weekly-digest.md
 ├── packages/db/src/schema/     # plus boards and feedback
 ├── packages/db/drizzle/        # one reviewed migration per schema change

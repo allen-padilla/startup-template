@@ -36,8 +36,6 @@ Both files live in the repository root. The application and the database tooling
 | `STRIPE_PRICE_PRO_MONTHLY`                                      | no       | server        | Stripe Price ID for the paid plan             |
 | `SMTP_URL`                                                      | no       | server secret | SMTP connection string; set with `EMAIL_FROM` |
 | `EMAIL_FROM`                                                    | no       | server        | sender address; set with `SMTP_URL`           |
-| `TYPESAFE_API_KEY`                                              | no       | server secret | decision models (`@startup/decision`)         |
-| `TYPESAFE_MODEL`                                                | no       | server        | TypeSafe model name                           |
 | `NEXT_PUBLIC_SENTRY_DSN`                                        | no       | browser       | enables Sentry                                |
 | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, `NEXT_PUBLIC_POSTHOG_HOST` | no       | browser       | enables PostHog when both are set             |
 | `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`             | no       | build only    | Sentry source-map upload                      |

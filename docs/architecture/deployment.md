@@ -51,8 +51,6 @@ Set these in the deployment platform. `.env.local` is not used in production, an
 | `STRIPE_SECRET_KEY`                                             | billing  | runtime         | secret                                              |
 | `STRIPE_WEBHOOK_SECRET`                                         | billing  | runtime         | secret                                              |
 | `STRIPE_PRICE_PRO_MONTHLY`                                      | billing  | runtime         | live-mode Price ID                                  |
-| `TYPESAFE_API_KEY`                                              | decision | runtime         | secret                                              |
-| `TYPESAFE_MODEL`                                                | decision | runtime         | TypeSafe model name                                 |
 | `SMTP_URL`                                                      | email    | runtime         | secret; your SMTP provider, never the local Mailpit |
 | `EMAIL_FROM`                                                    | email    | runtime         | sender on a domain you have verified                |
 | `NEXT_PUBLIC_SENTRY_DSN`                                        | no       | build           | public                                              |
