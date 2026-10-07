@@ -13,7 +13,7 @@ Dependency management must:
 
 Use pnpm only. Do not use npm, yarn, or bun to install or update dependencies.
 
-The pnpm version is pinned in the root `package.json` (`packageManager` and `devEngines.packageManager`). Corepack installs that version. Change the pin deliberately, in its own change.
+The pnpm version is pinned in the root `package.json` (`packageManager` and `devEngines.packageManager`). Any pnpm 10 or newer downloads and runs that exact version, because `devEngines.packageManager.onFail` is `download`, and CI installs it with `pnpm/action-setup`. Change the pin deliberately, in its own change.
 
 Only one lockfile and one workspace file exist, both in the repository root. Do not create a nested `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `package-lock.json`, or `yarn.lock`.
 
@@ -117,7 +117,7 @@ Type checking, `next build`, and the tests pass on TypeScript 7. Only linting bl
 
 Do not install TypeScript 6 and TypeScript 7 side by side to work around this. `next build` runs the compiler from the package named `typescript`, so it would type-check with TypeScript 6 while `pnpm typecheck` used TypeScript 7.
 
-When upgrading, set `target` and `lib` explicitly in `packages/typescript-config/base.json`. Both are unset there, and TypeScript 7 changes their defaults.
+`target` and `lib` are set explicitly in `packages/typescript-config/base.json`, so a major TypeScript release cannot change them silently.
 
 ## Install Scripts
 

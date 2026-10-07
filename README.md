@@ -41,7 +41,7 @@ The template lives at [github.com/allen-padilla/startup-template](https://github
 ### Requirements
 
 - **Node.js 24.** `.node-version` pins it for version managers such as fnm and nvm.
-- **pnpm through Corepack.** Corepack ships with Node.js 24 and installs the pnpm version pinned in `package.json`.
+- **pnpm 10 or newer**, installed once with any method on [pnpm.io/installation](https://pnpm.io/installation), such as `npm install -g pnpm`. Every command then runs the exact pnpm version pinned in `package.json`, downloaded on first use.
 - **Docker**, or a compatible runtime that provides `docker compose`, for the local PostgreSQL database and Mailpit.
 - **Git.**
 - **OpenSSL**, to generate a local secret. Most systems already have it.
@@ -61,7 +61,6 @@ Then set up and start the application:
 ```bash
 cd my-app
 
-corepack enable
 pnpm install --frozen-lockfile
 
 cp .env.example .env.local

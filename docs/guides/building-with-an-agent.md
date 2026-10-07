@@ -59,7 +59,7 @@ You own the spec and the review. The agent owns the plan, the code, and the veri
 
 Do these once per machine. An agent cannot do them for you.
 
-- Install everything in [Requirements](../../README.md#requirements): Node.js 24, Docker, Git, and OpenSSL. On Windows, use WSL.
+- Install everything in [Requirements](../../README.md#requirements): Node.js 24, pnpm, Docker, Git, and OpenSSL. On Windows, use WSL.
 - Install the [GitHub CLI](https://cli.github.com/) and sign in with `gh auth login`.
 - Start Docker.
 - Open your agent in the directory that will hold your projects, such as `~/dev`. On Windows, that directory must be on the Linux filesystem, not under `/mnt/c`.
@@ -75,8 +75,8 @@ allen-padilla/startup-template, and clone it into ~/dev/feedbox. Use:
 Then, inside ~/dev/feedbox:
 
 1. Read AGENTS.md and follow it for everything that follows.
-2. Follow the Quick Start in README.md: enable Corepack, install dependencies
-   with the frozen lockfile, create .env.local from .env.example with a freshly
+2. Follow the Quick Start in README.md: install dependencies with the frozen
+   lockfile, create .env.local from .env.example with a freshly
    generated BETTER_AUTH_SECRET, start the database, and apply the migrations.
    Never print, echo, or log the secret or the contents of .env.local.
 3. Run ./scripts/check-environment.sh and fix anything it reports.
