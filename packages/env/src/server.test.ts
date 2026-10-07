@@ -42,7 +42,7 @@ describe("required URLs", () => {
     });
 
     expect(database.success).toBe(false);
-    expect(database.error?.message).toContain("postgres or postgresql URL");
+    expect(database.error?.message).toContain("postgres:// or postgresql:// URL");
 
     const auth = serverSchema.safeParse({
       ...required,
@@ -50,7 +50,17 @@ describe("required URLs", () => {
     });
 
     expect(auth.success).toBe(false);
-    expect(auth.error?.message).toContain("http or https URL");
+    expect(auth.error?.message).toContain("http:// or https:// URL");
+  });
+
+  it("reports a malformed URL without throwing or echoing it", () => {
+    for (const value of ["", "not a url", "postgresql://user:s3cr3t@"]) {
+      const result = serverSchema.safeParse({ ...required, DATABASE_URL: value });
+
+      expect(result.success, JSON.stringify(value)).toBe(false);
+      expect(result.error?.issues[0]?.path).toEqual(["DATABASE_URL"]);
+      expect(result.error?.message).not.toContain("s3cr3t");
+    }
   });
 });
 
