@@ -62,7 +62,7 @@ fi
 if command -v pnpm >/dev/null 2>&1; then
   pass "pnpm is available"
 else
-  fail "pnpm is not available. Run: corepack enable"
+  fail "pnpm is not available. Install it once (for example: npm install -g pnpm). See https://pnpm.io/installation"
 fi
 
 if [ -d node_modules ]; then
