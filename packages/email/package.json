@@ -12,13 +12,13 @@
   },
   "dependencies": {
     "@startup/env": "workspace:*",
-    "nodemailer": "^10.0.12",
+    "nodemailer": "^10.0.14",
     "zod": "^4"
   },
   "devDependencies": {
     "@startup/typescript-config": "workspace:*",
     "@types/node": "^24",
     "typescript": "^5",
-    "vitest": "^5.0.2"
+    "vitest": "^5.0.3"
   }
 }

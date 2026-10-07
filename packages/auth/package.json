@@ -19,18 +19,18 @@
     "@startup/db": "workspace:*",
     "@startup/email": "workspace:*",
     "@startup/env": "workspace:*",
-    "better-auth": "^1.7.6"
+    "better-auth": "^1.7.7"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
     "@startup/typescript-config": "workspace:*",
     "@types/node": "^24",
     "drizzle-orm": "^0.45.3",
-    "next": "16.3.6",
+    "next": "16.3.8",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "typescript": "^5",
-    "vitest": "^5.0.2"
+    "vitest": "^5.0.3"
   },
   "peerDependencies": {
     "react": "^19.2.8",
