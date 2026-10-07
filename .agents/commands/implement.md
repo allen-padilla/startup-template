@@ -24,7 +24,7 @@ Then check the record against the repository:
 - The slice is `in-progress` and this checkout holds work on it: continue that work. Read the existing changes first. Do not start over.
 - The slice is `in-progress` on another branch or in another worktree: stop and report it. Another task owns it.
 - The slice is `done`: do not redo it. Report it and ask what is wanted.
-- The record and the repository disagree: the repository is right. Correct the recorded status and report the difference.
+- The record and the repository disagree: correct the recorded status and report the difference.
 
 When the task starts a slice, set its status to `in-progress` and add the branch name.
 
@@ -90,7 +90,7 @@ When the task implements a plan slice and its required verification has passed:
 - set the slice's status to `done` in the plan, and add the pull request once it exists
 - run `pnpm agent:check`, because the plan changed after `pnpm verify`
 
-Do not mark a slice `done` before its verification passes. If the session ends first, leave the slice `in-progress`, so the next session continues from the right place.
+If the session ends before the verification passes, leave the slice `in-progress`, so the next session continues from the right place.
 
 ## 7. Review
 
