@@ -4,7 +4,7 @@
 
 Several coding agents, or an agent and a human, may work on this repository at the same time. Git worktrees give each concurrent task its own checkout, so agents never edit the same working tree or overwrite each other's uncommitted changes.
 
-This document covers how concurrent tasks are isolated, owned, kept up to date, integrated, and cleaned up. It uses plain Git. No helper scripts or orchestration tools are required.
+This document covers how concurrent tasks are isolated, owned, kept up to date, integrated, and cleaned up. It uses plain Git. No orchestration tool is required. `pnpm agent:status` is a read-only summary of the same Git data. See `agent-workflows.md`.
 
 ## Core Model
 
@@ -99,7 +99,9 @@ Agents must not copy, print, or log secret values from another checkout's `.env.
 
 ## Ownership and Overlap
 
-Before editing, the task owner checks for overlap:
+Before editing, the task owner checks for overlap. `pnpm agent:status` shows it in one place: the active tasks, the hotspots each one changes, the files more than one task changes, and the status of each plan's slices. It sees local branches and worktrees. Add `--remote` to include the branches on `origin` as last fetched. It cannot see work that exists only in a checkout on another machine.
+
+The same information comes from:
 
 - `git worktree list` for active tasks
 - relevant plans in `docs/plans/`
@@ -132,6 +134,8 @@ These files are shared by the whole repository. Concurrent edits conflict easily
 | `apps/web/next.config.ts`    | build, environment loading, and Sentry configuration          |
 
 Only one active task should change a hotspot at a time. When a task must touch one, say so in its plan or report.
+
+`pnpm agent:status` reads this table to report which active tasks change a hotspot. Keep the first column to one path, or a directory followed by `/*`, in each row. `pnpm agent:check` fails when the table cannot be read or a path in it does not exist.
 
 ## Lower-Conflict Areas
 

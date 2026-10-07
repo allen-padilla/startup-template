@@ -3,14 +3,18 @@
 // Read-only structural check of the agent harness.
 //
 // Checks mechanical facts only: required files, skill frontmatter, non-empty
-// commands and roles, thin tool adapters, and repository-local references in
-// the harness documentation. It does not judge the quality of the guidance.
+// commands and roles, thin tool adapters, repository-local references in the
+// harness documentation, the status recorded in each implementation plan, and
+// the Shared Hotspots table. It does not judge the quality of the guidance or
+// whether a recorded status is true.
 //
 // It reads Markdown and directory listings. It never reads environment files
 // or environment variables. See docs/architecture/agent-workflows.md.
 
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
+
+import { readHotspots, readPlanStatus } from "./lib/task-state.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 
@@ -25,6 +29,11 @@ const REQUIRED_PATHS = [
 const SKILLS_DIRECTORY = ".agents/skills";
 const COMMANDS_DIRECTORY = ".agents/commands";
 const ROLES_DIRECTORY = ".agents/agents";
+
+// Every Markdown file here except README.md is a plan that records its status.
+const PLANS_DIRECTORY = "docs/plans";
+// `pnpm agent:status` reads its Shared Hotspots table.
+const HOTSPOTS_DOCUMENT = "docs/architecture/parallel-development.md";
 
 // Tool-specific entry points. Each must stay a pointer to AGENTS.md.
 const ADAPTERS = ["CLAUDE.md"];
@@ -250,6 +259,53 @@ function checkAdapters() {
   }
 }
 
+// The format is documented in docs/plans/README.md.
+function checkPlans() {
+  const plans = (entriesOf(PLANS_DIRECTORY) ?? [])
+    .filter((entry) => !entry.isDirectory() && entry.name.endsWith(".md"))
+    .filter((entry) => entry.name !== "README.md")
+    .map((entry) => `${PLANS_DIRECTORY}/${entry.name}`)
+    .sort();
+
+  for (const plan of plans) {
+    for (const { line, message } of readPlanStatus(read(plan)).problems) {
+      fail(line ? `${plan}:${line}` : plan, message);
+    }
+  }
+
+  return plans.length;
+}
+
+function checkHotspots() {
+  if (kindOf(HOTSPOTS_DOCUMENT) !== "file") {
+    fail(HOTSPOTS_DOCUMENT, "required file does not exist");
+    return;
+  }
+
+  const hotspots = readHotspots(read(HOTSPOTS_DOCUMENT));
+  if (hotspots.length === 0) {
+    fail(
+      HOTSPOTS_DOCUMENT,
+      "no table of paths found below `## Shared Hotspots`. `pnpm agent:status` reads it",
+    );
+  }
+
+  for (const { pattern, line } of hotspots) {
+    const location = `${HOTSPOTS_DOCUMENT}:${line}`;
+    const directory = pattern.endsWith("/*") ? pattern.slice(0, -2) : null;
+
+    if (/[*?<>{}]/.test(directory ?? pattern)) {
+      fail(location, `hotspot \`${pattern}\` must be one path, or a directory followed by \`/*\``);
+    } else if (directory !== null && kindOf(directory) !== "directory") {
+      fail(location, `hotspot \`${pattern}\` names a directory that does not exist`);
+    } else if (directory === null && kindOf(pattern) === null) {
+      fail(location, `hotspot \`${pattern}\` points to a path that does not exist`);
+    } else if (directory === null && kindOf(pattern) === "directory") {
+      fail(location, `hotspot \`${pattern}\` is a directory. Write it as a directory followed by \`/*\``);
+    }
+  }
+}
+
 // Blanks out fenced code blocks and tool-managed sections, keeping line
 // numbers stable. Tool-managed sections (`<!-- BEGIN:name -->` to
 // `<!-- END:name -->`) are written by other tools and may describe paths
@@ -401,6 +457,8 @@ const skills = checkSkills();
 const commands = checkNonEmptyMarkdown(COMMANDS_DIRECTORY);
 const roles = checkNonEmptyMarkdown(ROLES_DIRECTORY);
 checkAdapters();
+const plans = checkPlans();
+checkHotspots();
 const { documents, references } = checkReferences();
 
 if (failures.length > 0) {
@@ -415,5 +473,5 @@ if (failures.length > 0) {
 
 console.log(
   `Agent harness check passed: ${skills} skills, ${commands} commands, ${roles} roles, ` +
-    `${references} references in ${documents} documents.`,
+    `${plans} plans, ${references} references in ${documents} documents.`,
 );

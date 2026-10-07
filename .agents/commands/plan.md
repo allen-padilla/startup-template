@@ -54,5 +54,6 @@ Commands that should be run: targeted tests, `pnpm verify`, and `pnpm verify:ful
 
 - By default, return the plan in the response without modifying files.
 - Write a plan file only when the user explicitly asks to create or save one. Save it as `docs/plans/<feature-name>.md` (lowercase kebab-case), following `docs/plans/README.md`.
+- In a saved plan, put `- Status: pending` directly below each slice heading, or below the title when the plan has no slices. `pnpm agent:check` fails without it.
 
 Do not implement unless explicitly asked.

@@ -198,7 +198,8 @@ Run commands from the repository root.
 | `pnpm test:e2e`    | builds the application, starts it on port `3000`, runs the Playwright tests, and stops the server |
 | `pnpm verify`      | agent harness check, lint, typecheck, tests, production build                                    |
 | `pnpm verify:full` | `pnpm verify`, then the end-to-end tests                                                         |
-| `pnpm agent:check` | checks the structure of the agent harness, such as skill frontmatter and referenced paths        |
+| `pnpm agent:check` | checks the structure of the agent harness, such as skill frontmatter, referenced paths, and plan status |
+| `pnpm agent:status` | shows where the work stands: plan and slice status, active branches and worktrees, and overlaps  |
 
 Run `pnpm verify` before considering any change complete. Also run `pnpm verify:full` when a change affects application behavior or a complete user workflow, such as authentication, billing, or routing. Documentation-only changes do not need it.
 
@@ -246,7 +247,7 @@ What each product decides for itself:
 | [AGENTS.md](AGENTS.md)                                                             | What must every coding agent follow here, and where are the detailed rules and skills?              |
 | [Building a Product with an Agent](docs/guides/building-with-an-agent.md)          | How do I go from this template to a shipped product with a coding agent?                            |
 | [Template checklist](docs/template-checklist.md)                                   | What do I replace and configure after creating a project from the template?                         |
-| [Agent workflows](docs/architecture/agent-workflows.md)                            | How do the harness layers fit together, which guidance wins, and what does `pnpm agent:check` check? |
+| [Agent workflows](docs/architecture/agent-workflows.md)                            | How do the harness layers fit together, which guidance wins, how is task state recorded, and what does `pnpm agent:check` check? |
 | [Parallel development](docs/architecture/parallel-development.md)                  | How do several tasks run at once, each in its own branch and Git worktree?                          |
 | [Package boundaries](docs/architecture/package-boundaries.md)                      | What does each package do, and which may depend on which?                                           |
 | [Environment](docs/architecture/environment.md)                                    | Which variables exist, which are secret or public, and how are they validated?                      |
@@ -261,7 +262,7 @@ What each product decides for itself:
 | [Deployment](docs/architecture/deployment.md)                                      | How do I deploy: hosting, production variables, migrations, webhooks, and secrets?                  |
 | [Dependencies](docs/architecture/dependencies.md)                                  | How do I add or upgrade a dependency, and which upgrades are held back?                             |
 | [Specs](docs/specs/README.md)                                                      | How do I write a feature spec?                                                                      |
-| [Plans](docs/plans/README.md)                                                      | How do I write an implementation plan?                                                              |
+| [Plans](docs/plans/README.md)                                                      | How do I write an implementation plan and keep its status current?                                  |
 
 ## Using This as a Template
 

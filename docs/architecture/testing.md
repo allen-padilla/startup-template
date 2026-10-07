@@ -26,6 +26,8 @@ Also run `pnpm verify:full` for changes affecting significant application behavi
 
 Vitest is used for fast unit and integration-level tests.
 
+The harness scripts are the exception. Their tests are `scripts/lib/*.test.mjs`, use Node's built-in test runner, and need no dependencies. `pnpm agent:check` runs them, so they are part of `pnpm verify`. The tests of `scripts/lib/status.mjs` create small Git repositories in the temporary directory.
+
 Tests should generally live close to the implementation they exercise.
 
 Unit and integration tests never open a network connection. Packages that talk to external services inject fakes. `@startup/email` and `@startup/auth` also load a setup file (`src/testing/no-network.ts`) that fails any test that tries to connect. Databases run in memory with PGlite.

@@ -32,6 +32,7 @@ The template already describes how agents should work. The walkthrough uses thos
 | Repository rules     | `AGENTS.md`, `.agents/rules/`   | read by the agent on every task                                                 |
 | Spec                 | `docs/specs/<feature-name>.md`  | **what** the feature does, agreed before any code                               |
 | Plan                 | `docs/plans/<feature-name>.md`  | **how** it will be built: files, schema, routes, tests                          |
+| Task state           | the status below each slice heading of the plan, `pnpm agent:status` | where the work stands, so a fresh session knows what is done |
 | Workflow modes       | `.agents/commands/`             | `plan`, `implement`, `debug`, `review`                                          |
 | Skills               | `.agents/skills/`               | step-by-step procedures for migrations, API routes, environment variables, packages, and worktrees |
 | Verification         | `pnpm verify`, `pnpm verify:full` | the definition of done                                                        |
@@ -263,6 +264,7 @@ Check the plan for:
 - **Security.** The public form trusts nothing from the browser, and every inbox query is filtered by the signed-in owner.
 - **Tests.** Unit tests for the logic, and at least one end-to-end test for the main path.
 - **Order.** Each slice builds and passes `pnpm verify` on its own.
+- **Status.** Every slice has `- Status: pending` directly below its heading.
 
 A reasonable slice order for Feedbox. Sign-up, sign-in, password reset, and the account page already exist, so no slice builds them:
 
@@ -298,6 +300,19 @@ spec and plan. Do not merge it.
 ```
 
 Change the slice number, the branch name, and the named skill for each slice. Add "Run pnpm verify:full" to the prompt for slices that change sign-in, billing, routing, or a complete user workflow, such as slices 2, 3, and 5 here.
+
+The fresh session does not need to be told what is already done. `implement.md` starts by running `pnpm agent:status` and reading the status recorded in the plan. The agent sets the slice to `in-progress` when it starts and to `done` when its required verification passes. It does so on the slice's branch, so the status merges together with the code.
+
+If a session ends before its slice is finished, start a new one in the same checkout:
+
+```text
+Follow .agents/commands/implement.md.
+
+Continue docs/plans/feedbox-core.md from where it stands. Run pnpm agent:status
+first, and tell me what you found before you change anything.
+```
+
+Uncommitted work exists only in that checkout. If the checkout will not be kept, ask the agent to commit and push before the session ends.
 
 ### Step 5: Review Before Merging
 
@@ -406,6 +421,8 @@ Run pnpm verify, then commit, push, and open a pull request.
 
 Only one active task may change the schema at a time. Other shared hotspots, such as `package.json`, `pnpm-lock.yaml`, and `.env.example`, need the same care. Merge one branch, then rebase the other on the new `main`.
 
+Run `pnpm agent:status` in the main checkout to see both tasks, the hotspots each one changes, and any file both have changed.
+
 The digest puts text that visitors typed into an email, so its spec should send it only to owners whose address is verified. The template records verification but does not enforce it. See the Content section of [docs/architecture/email.md](../architecture/email.md#content).
 
 ### Example D: Fixing a Bug
@@ -428,7 +445,7 @@ When an agent makes the same mistake twice, fix the instructions instead of the 
 - a repeated procedure, such as "how to add a new board setting", becomes a skill in `.agents/skills/`
 - a design decision that outlives one feature goes in `docs/architecture/`
 
-`pnpm agent:check` catches broken references in the harness. See [docs/architecture/agent-workflows.md](../architecture/agent-workflows.md).
+`pnpm agent:check` catches broken references in the harness, and plan slices with a missing or invalid status. See [docs/architecture/agent-workflows.md](../architecture/agent-workflows.md).
 
 ## Prompting Tips
 
@@ -437,7 +454,7 @@ When an agent makes the same mistake twice, fix the instructions instead of the 
 - **Say where to stop.** "Do not start slice 3", "Do not merge", and "If the plan is wrong, stop and tell me" prevent most surprises.
 - **Ask for evidence.** Ask for the `pnpm verify` result, the migration SQL, and the test that proves each criterion, not only "done".
 - **Keep secrets out of the chat.** Put real keys in `.env.local` yourself. The agent never needs to see them.
-- **Start fresh sessions.** Use a new session for each slice and for each review.
+- **Start fresh sessions.** Use a new session for each slice and for each review. The status recorded in the plan tells it where the work stands.
 - **Keep sessions honest.** If an agent weakens a test, skips validation, or changes CI to get green, reject the change. `AGENTS.md` already forbids it.
 
 ## After the Walkthrough

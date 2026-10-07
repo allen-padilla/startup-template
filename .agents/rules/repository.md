@@ -114,15 +114,26 @@ Limits:
 - Information that is obvious from the code usually does not need prose.
 - Do not use task plans as a permanent store for architectural knowledge.
 
+## Task State
+
+See the Task State section of `docs/architecture/agent-workflows.md`.
+
+- The status recorded in a plan in `docs/plans/` says where that work stands. A conversation does not.
+- Start a task by reading the state: run `pnpm agent:status`, then check it against `git status` and the branch's commits.
+- When the record and the repository disagree, the repository is right. Correct the record and report the difference.
+- Set a slice to `done` only after its required verification passes.
+- Change a slice's status on the same branch as the work it describes.
+
 ## Completion
 
 Before reporting completion:
 
 1. Run the required verification.
-2. Review the diff (`git status`, `git diff --stat`, `git diff`).
-3. Check for accidental or generated files.
-4. Check for secret exposure.
-5. Report what changed, verification results, and any remaining concerns.
+2. When the task implements a plan slice, update that slice's status in the plan, then run `pnpm agent:check`.
+3. Review the diff (`git status`, `git diff --stat`, `git diff`).
+4. Check for accidental or generated files.
+5. Check for secret exposure.
+6. Report what changed, verification results, and any remaining concerns.
 
 Do not commit unless explicitly requested.
 
@@ -141,7 +152,7 @@ Follow the `worktree-task` skill. See `docs/architecture/parallel-development.md
 - The main checkout stays on `main` and coordinates: creating worktrees, reviewing branches, merging, and cleanup.
 - Small tasks with no parallel work may still follow the normal small-task flow in the main checkout.
 - Do not edit files outside the assigned task scope merely because they are nearby.
-- Before modifying a shared hotspot, check whether another active task owns it.
+- Before modifying a shared hotspot, check whether another active task owns it. `pnpm agent:status` lists the hotspots each active task changes.
 - If two active tasks require the same files or schema, report the overlap instead of racing.
 - Only one active task may own schema and migration changes at a time.
 - `package.json` files and `pnpm-lock.yaml` are shared dependency hotspots. Regenerate the lockfile with `pnpm install` rather than hand-merging it.

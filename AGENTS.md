@@ -52,7 +52,7 @@ The canonical fast local correctness check is:
 
 It currently covers:
 
-- agent harness structure (`pnpm agent:check`)
+- agent harness structure and plan status (`pnpm agent:check`)
 - lint
 - type checking
 - fast automated tests
@@ -161,6 +161,8 @@ Vitest is used for fast unit and integration-level tests.
 
 Playwright is used for end-to-end browser testing.
 
+The harness scripts in `scripts/` are tested with Node's built-in test runner. `pnpm agent:check` runs those tests.
+
 Prefer tests that validate externally meaningful behavior rather than implementation details.
 
 Do not delete, skip, or weaken tests merely to make a change pass.
@@ -216,6 +218,8 @@ Current skills:
 - `worktree-task` — tasks in a Git worktree and parallel agent work
 
 Desired feature behavior may be specified in `docs/specs/`. Implementation plans may be saved in `docs/plans/` when requested.
+
+Task state is recorded, not remembered. Each slice of a plan records its status below its heading, and `pnpm agent:status` shows it together with the active branches and worktrees. Start a task by reading that state. Update the slice's status when it starts and when its verification passes.
 
 Keep detailed procedures in `.agents/`, not in `AGENTS.md`.
 
