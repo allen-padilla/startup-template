@@ -10,7 +10,7 @@ The guidance is plain Markdown under `AGENTS.md`, `.agents/`, and `docs/`. Two c
 
 ### `AGENTS.md`
 
-The entry point and the highest-level repository guidance. It holds concise, repository-wide invariants: package manager, package boundaries, server/client separation, secrets, and the core auth, database, billing, testing, and observability constraints. It points to everything else and does not contain step-by-step procedures.
+The entry point and the highest-level repository guidance. It holds the repository-wide invariants, the one statement of the verification policy, and pointers to everything else. It does not contain step-by-step procedures.
 
 ### `.agents/rules/`
 
@@ -37,10 +37,6 @@ Workflow modes that define how to approach a task:
 - `debug` — reproduce a failure, find the root cause, and make the smallest fix
 - `review` — review a working tree, commit, or branch without modifying files
 
-### `.agents/agents/`
-
-Role definitions (`planner`, `implementer`, `reviewer`) for tools that support specialized agents or subagents. Each role maps onto the matching command and inherits its constraints.
-
 ### `docs/specs/`
 
 What should happen: desired product or system behavior, agreed before implementation. See `docs/specs/README.md`.
@@ -65,7 +61,7 @@ It checks mechanical facts only:
 
 - `AGENTS.md`, `.agents/rules/repository.md`, `docs/architecture/`, `docs/specs/`, and `docs/plans/` exist
 - every directory in `.agents/skills/` has a non-empty `SKILL.md` whose frontmatter has a `description` and a `name` equal to the directory name
-- every Markdown file in `.agents/commands/` and `.agents/agents/` is non-empty
+- every Markdown file in `.agents/commands/` is non-empty
 - `CLAUDE.md` points to `AGENTS.md` and stays a few lines long
 - every plan in `docs/plans/` records a valid status for each of its slices, in the format of `docs/plans/README.md`
 - the Shared Hotspots table in `parallel-development.md` can be read, and its paths exist
@@ -136,7 +132,7 @@ When guidance conflicts, apply this order, highest first:
 3. Relevant `docs/architecture/` documents
 4. `.agents/rules/`
 5. The relevant skill in `.agents/skills/`
-6. Command and role workflow guidance in `.agents/commands/` and `.agents/agents/`
+6. Workflow guidance in `.agents/commands/`
 
 If two prose documents conflict, do not guess:
 
@@ -198,13 +194,7 @@ The Durable Knowledge section of `.agents/rules/repository.md` says which source
 
 ## Verification
 
-`pnpm verify` is required before considering implementation complete. It runs the agent harness check, lint, type checking, fast automated tests, and the production build.
-
-Also run `pnpm verify:full` for changes affecting significant application behavior or complete user workflows, including authentication, billing, routing, and other cross-system or user-facing behavior. It adds Playwright end-to-end tests.
-
-Documentation-only changes do not require `pnpm verify:full` unless the task explicitly asks for it.
-
-See `testing.md`.
+The Verification section of `AGENTS.md` is the one statement of what must run and when. `testing.md` describes what each command does and what the end-to-end tests need.
 
 ## Commits
 

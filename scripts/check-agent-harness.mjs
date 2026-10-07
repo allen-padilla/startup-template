@@ -3,7 +3,7 @@
 // Read-only structural check of the agent harness.
 //
 // Checks mechanical facts only: required files, skill frontmatter, non-empty
-// commands and roles, thin tool adapters, repository-local references in the
+// commands, thin tool adapters, repository-local references in the
 // harness documentation, the status recorded in each implementation plan, and
 // the Shared Hotspots table. It does not judge the quality of the guidance or
 // whether a recorded status is true.
@@ -28,7 +28,6 @@ const REQUIRED_PATHS = [
 
 const SKILLS_DIRECTORY = ".agents/skills";
 const COMMANDS_DIRECTORY = ".agents/commands";
-const ROLES_DIRECTORY = ".agents/agents";
 
 // Every Markdown file here except README.md is a plan that records its status.
 const PLANS_DIRECTORY = "docs/plans";
@@ -455,7 +454,6 @@ function checkReferences() {
 checkRequiredPaths();
 const skills = checkSkills();
 const commands = checkNonEmptyMarkdown(COMMANDS_DIRECTORY);
-const roles = checkNonEmptyMarkdown(ROLES_DIRECTORY);
 checkAdapters();
 const plans = checkPlans();
 checkHotspots();
@@ -472,6 +470,6 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `Agent harness check passed: ${skills} skills, ${commands} commands, ${roles} roles, ` +
+  `Agent harness check passed: ${skills} skills, ${commands} commands, ` +
     `${plans} plans, ${references} references in ${documents} documents.`,
 );

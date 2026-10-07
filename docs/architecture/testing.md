@@ -14,13 +14,11 @@ It runs:
 - fast automated tests
 - production build
 
-Agents must run this before considering implementation complete.
-
 ## Full Verification
 
-Also run `pnpm verify:full` for changes affecting significant application behavior or complete user workflows, including authentication, billing, routing, and other cross-system or user-facing behavior.
+`pnpm verify:full` runs `pnpm verify` and then the Playwright end-to-end tests.
 
-`pnpm verify:full` runs `pnpm verify` and then the Playwright end-to-end tests. Documentation-only changes do not require it.
+The Verification section of `AGENTS.md` says when each command is required.
 
 ## Unit and Integration Tests
 

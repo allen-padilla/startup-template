@@ -48,7 +48,7 @@ Potential failure modes or compatibility concerns.
 
 ### Verification
 
-Commands that should be run: targeted tests, `pnpm verify`, and `pnpm verify:full` when the change affects significant application behavior or complete user workflows.
+Commands that should be run: targeted tests, `pnpm verify`, and `pnpm verify:full` when the Verification section of `AGENTS.md` requires it.
 
 ## Saving a Plan
 

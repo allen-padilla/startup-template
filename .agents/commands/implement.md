@@ -81,7 +81,7 @@ Then run:
 
 `pnpm verify`
 
-`pnpm verify` is required before considering implementation complete. Also run `pnpm verify:full` for changes affecting significant application behavior or complete user workflows, including authentication, billing, routing, and other cross-system or user-facing behavior. Documentation-only changes do not require it.
+Then run `pnpm verify:full` when the Verification section of `AGENTS.md` requires it.
 
 ## 6. Record
 

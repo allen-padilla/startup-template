@@ -69,7 +69,7 @@ Run:
 
 `pnpm verify`
 
-Also run `pnpm verify:full` when the change affects significant application behavior or complete user workflows, including authentication, billing, routing, and other cross-system or user-facing behavior. Documentation-only changes do not require it.
+Also run `pnpm verify:full` when the Verification section of `AGENTS.md` requires it.
 
 Verification reflects the checked-out working tree. When reviewing a commit or branch that is not checked out, say so rather than reporting unrelated results.
 
