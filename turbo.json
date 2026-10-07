@@ -15,7 +15,18 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "RUN_MIGRATIONS",
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
+        "STRIPE_PRICE_PRO_MONTHLY",
+        "SMTP_URL",
+        "EMAIL_FROM"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]

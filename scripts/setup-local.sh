@@ -16,20 +16,21 @@ pnpm install --frozen-lockfile
 
 # The secret is generated and written inside that script, so it never passes
 # through the shell.
-case "$(node scripts/ensure-env-secret.mjs "$ENV_FILE" .env.example)" in
+env_status="$(node scripts/ensure-env-secret.mjs "$ENV_FILE" .env.example)"
+case "$env_status" in
   created) echo "Created $ENV_FILE from .env.example with a generated BETTER_AUTH_SECRET" ;;
   filled) echo "Filled in the empty BETTER_AUTH_SECRET in the existing $ENV_FILE" ;;
   *) echo "Keeping the existing $ENV_FILE" ;;
 esac
+
+# Reject invalid configuration before starting services or applying migrations.
+./scripts/check-environment.sh
 
 echo "Starting PostgreSQL and Mailpit"
 pnpm db:up
 
 echo "Applying migrations"
 pnpm db:migrate
-
-echo
-./scripts/check-environment.sh
 
 echo
 echo "Ready. Start the application with: pnpm dev"

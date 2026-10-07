@@ -115,7 +115,7 @@ Handled events:
 
 Other events are acknowledged and ignored.
 
-Handled events only identify which subscription changed. The handler fetches the subscription's current state from Stripe and upserts it on `stripe_subscription_id`. As a result:
+Handled events only identify which subscription changed. The handler acquires a PostgreSQL transaction-scoped advisory lock for that subscription before fetching its current state from Stripe and upserting it on `stripe_subscription_id`. Concurrent deliveries for the same subscription wait across application instances, so a delayed response cannot overwrite a newer refresh. The lock is released when the transaction commits or rolls back. As a result:
 
 - duplicate deliveries produce the same row
 - out-of-order deliveries converge on Stripe's current state

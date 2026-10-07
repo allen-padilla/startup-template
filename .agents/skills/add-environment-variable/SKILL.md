@@ -57,6 +57,7 @@ Use this skill whenever a task introduces a new environment variable or changes 
    - `env`: values that intentionally change build output and should change the cache key (for example `BETTER_AUTH_URL`, `SENTRY_ORG`).
    - `passThroughEnv`: secrets and build credentials that must be available but should not be part of the cache key (for example `BETTER_AUTH_SECRET`, `DATABASE_URL`, `SENTRY_AUTH_TOKEN`).
    - `NEXT_PUBLIC_*` is already included for `apps/web` by Turbo's Next.js framework inference; do not list it.
+   - `dev` launches the application, so a server variable read by the application must also appear in the dev task's `passThroughEnv` to support shell overrides.
    - Do not add every variable to Turbo. Runtime-only variables that no Turbo task reads need no entry.
 
 8. Update `docs/architecture/environment.md` only when the environment model changes materially, such as a new category, entry point, or rule. Update the owning subsystem's architecture doc when the variable changes how that subsystem is configured.

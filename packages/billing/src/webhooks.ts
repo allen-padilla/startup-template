@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 
-import { db as defaultDb, type Database } from "@startup/db";
+import { db as defaultDb, sql, type Database } from "@startup/db";
 
 import { getStripe, getWebhookSecret } from "./stripe";
 import {
@@ -93,7 +93,16 @@ export async function handleBillingWebhookEvent(
   }
 
   const client = stripe ?? getStripe();
-  const subscription = await client.subscriptions.retrieve(subscriptionId);
 
-  return syncStripeSubscription(subscription, { db });
+  return db.transaction(async (tx) => {
+    // Lock before retrieving: otherwise an older Stripe response can arrive
+    // after a cancellation and overwrite it. The transaction releases the
+    // lock on success or failure, including across application instances.
+    await tx.execute(sql`select pg_advisory_xact_lock(
+      hashtextextended(${`billing-subscription:${subscriptionId}`}, 0)
+    )`);
+    const subscription = await client.subscriptions.retrieve(subscriptionId);
+
+    return syncStripeSubscription(subscription, { db: tx });
+  });
 }
