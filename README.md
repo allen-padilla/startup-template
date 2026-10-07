@@ -64,7 +64,7 @@ pnpm dev
 
 Open <http://localhost:3000>. Email sent by the application is captured by the local mail catcher, Mailpit, at <http://localhost:8025>.
 
-`pnpm setup:local` installs the dependencies from the lockfile, creates `.env.local` from `.env.example` with a freshly generated `BETTER_AUTH_SECRET` that it never prints, starts PostgreSQL and Mailpit, and applies the migrations. Every other value in `.env.example` already works for local development. The script is safe to run again and keeps an existing `.env.local`.
+`pnpm setup:local` installs the dependencies from the lockfile, creates `.env.local` from `.env.example` with a freshly generated `BETTER_AUTH_SECRET` that it never prints, starts PostgreSQL and Mailpit, and applies the migrations. Every other value in `.env.example` already works for local development. The script is safe to run again: it keeps an existing `.env.local` and only fills in an empty `BETTER_AUTH_SECRET`.
 
 To check your setup at any point, run `./scripts/check-environment.sh`. It verifies the Node.js version, pnpm, installed dependencies, the required environment variables, that `SMTP_URL` and `EMAIL_FROM` are set together, and Docker. It changes nothing and never prints a value.
 
