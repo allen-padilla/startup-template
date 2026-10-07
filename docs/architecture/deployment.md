@@ -213,11 +213,11 @@ See `observability.md`.
 
 ## CI Before Deploy
 
-The `Trigger Coolify` job in `.github/workflows/ci.yml` runs on pushes to `main`, after the `Lint, Typecheck, Test, Build` and `Playwright` jobs succeed, and calls the Coolify deploy webhook. It needs two repository secrets:
+The `Trigger Coolify` job in `.github/workflows/ci.yml` runs on pushes to `main`, after the `Lint, Typecheck, Test, Build` and `Playwright` jobs succeed, and calls the Coolify deploy webhook with a `POST` request, the only method `/api/v1/deploy` accepts. It needs two repository secrets:
 
 | Secret                | Value                                                                         |
 | --------------------- | ----------------------------------------------------------------------------- |
-| `COOLIFY_WEBHOOK_URL` | the resource's deploy webhook URL, from the Webhooks page of the resource     |
+| `COOLIFY_WEBHOOK_URL` | the resource's deploy webhook URL, from the Webhooks page of the resource (`https://<coolify>/api/v1/deploy?uuid=<resource>&force=false`) |
 | `COOLIFY_TOKEN`       | an API token from Keys & Tokens in Coolify, with permission to deploy        |
 
 Without them the job succeeds with a warning annotation that the commit was not deployed, so a new project deploys nowhere until it is configured. Turn off Coolify's automatic deployment on push, or it deploys before the checks run.

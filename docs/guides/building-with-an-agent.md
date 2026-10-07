@@ -106,7 +106,7 @@ If the agent stops on an error, these are the usual causes:
 | `port is already allocated` on `5432`                 | another PostgreSQL is running                            | stop it, or ask the agent which process holds the port                |
 | `port is already allocated` on `1025` or `8025`       | another mail catcher is running                          | stop it, or ask the agent which process holds the port                |
 | engine or version errors during `pnpm install`        | the wrong Node.js version                                | install Node.js 24; `.node-version` pins it                           |
-| `BETTER_AUTH_SECRET` validation fails                 | the secret was not written into `.env.local`             | re-run the `sed` line from [Quick Start](../../README.md#quick-start)                |
+| `BETTER_AUTH_SECRET` validation fails                 | the secret was not written into `.env.local`             | run `pnpm setup:local` again; it fills in an empty secret and keeps the rest of the file |
 | very slow installs or file watching on Windows        | the repository is under `/mnt/c`                         | clone it again inside the Linux filesystem                            |
 
 ### Prompt 2: Make It Yours

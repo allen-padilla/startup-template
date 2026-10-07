@@ -24,7 +24,7 @@ Confirm:
 - the assigned task and its scope
 - no other active worktree or plan in `docs/plans/` owns the files or hotspots this task needs
 
-`pnpm agent:status` lists the active tasks, the hotspots each one changes, the files more than one task changes, and the status of each plan's slices. It works before dependencies are installed. To see everything another active branch changes, run `git diff --stat main...<branch>`.
+`pnpm agent:status` lists the active tasks, the hotspots each one changes, the files more than one task changes, and the status of each plan's slices. Before dependencies are installed, run it as `node scripts/agent-status.mjs`, because `pnpm` installs them first. To see everything another active branch changes, run `git diff --stat main...<branch>`.
 
 ## Rules
 

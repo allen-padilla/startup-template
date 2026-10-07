@@ -24,7 +24,7 @@ The Verification section of `AGENTS.md` says when each command is required.
 
 Vitest is used for fast unit and integration-level tests.
 
-The harness scripts are the exception. Their tests are `scripts/lib/*.test.mjs`, use Node's built-in test runner, and need no dependencies. `pnpm agent:check` runs them, so they are part of `pnpm verify`. The tests of `scripts/lib/status.mjs` create small Git repositories in the temporary directory.
+The repository scripts in `scripts/` are the exception. Their tests are `scripts/lib/*.test.mjs`, use Node's built-in test runner, and need no dependencies. `pnpm agent:check` runs them, so they are part of `pnpm verify`. The tests of `scripts/lib/status.mjs` create small Git repositories in the temporary directory.
 
 Tests should generally live close to the implementation they exercise.
 

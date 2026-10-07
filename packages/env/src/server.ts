@@ -9,9 +9,17 @@ export const serverSchema = z
       .enum(["development", "test", "production"])
       .default("development"),
 
-    DATABASE_URL: z.string().url(),
+    // The scheme is checked by Zod, not in a refinement: `new URL()` on a
+    // malformed value would throw out of `safeParse`, carrying the value.
+    DATABASE_URL: z.url({
+      protocol: /^postgres(ql)?$/,
+      error: "must be a postgres:// or postgresql:// URL",
+    }),
     BETTER_AUTH_SECRET: z.string().min(32),
-    BETTER_AUTH_URL: z.string().url(),
+    BETTER_AUTH_URL: z.url({
+      protocol: /^https?$/,
+      error: "must be an http:// or https:// URL",
+    }),
 
     // Set by a single-instance host so the server applies migrations when it
     // starts. See docs/architecture/deployment.md.
