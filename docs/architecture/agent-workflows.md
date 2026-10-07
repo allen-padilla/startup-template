@@ -103,7 +103,7 @@ Agents commit only when asked, so uncommitted work and uncommitted status change
 
 ### `pnpm agent:status`
 
-`scripts/agent-status.mjs` prints the current state. It runs Git commands that change nothing, and it reads Markdown. It never fetches and never edits a file. It shows:
+`scripts/agent-status.mjs` prints the current state. It runs Git commands that change nothing, and it reads Markdown. It never fetches and never edits a file. It needs no dependencies, but `pnpm` installs them before running any script, so in a checkout without `node_modules` run `node scripts/agent-status.mjs` directly. It shows:
 
 - each plan in the checkout with the status of its slices, and progress that another active task has recorded but the checkout does not have yet
 - active tasks: local branches with commits that `main` does not have, worktrees, and checkouts with no branch checked out, including their uncommitted files
@@ -127,12 +127,13 @@ Every implementation session starts by orienting itself, as step 1 of `.agents/c
 
 When guidance conflicts, apply this order, highest first:
 
-1. Actual repository behavior, tests, and mechanical checks
-2. `AGENTS.md` repository invariants
-3. Relevant `docs/architecture/` documents
-4. `.agents/rules/`
-5. The relevant skill in `.agents/skills/`
-6. Workflow guidance in `.agents/commands/`
+1. `AGENTS.md` repository invariants
+2. Relevant `docs/architecture/` documents
+3. `.agents/rules/`
+4. The relevant skill in `.agents/skills/`
+5. Workflow guidance in `.agents/commands/`
+
+Actual repository behavior, tests, and mechanical checks are not guidance. They are evidence of what the code does today, and they win over any prose that describes the code wrongly. They do not override an invariant: when the code contradicts `AGENTS.md`, the code is the defect. Stop and report it instead of following either.
 
 If two prose documents conflict, do not guess:
 
