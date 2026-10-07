@@ -339,28 +339,6 @@ importers:
         specifier: ^6
         version: 6.0.3
 
-  packages/decision:
-    dependencies:
-      '@startup/env':
-        specifier: workspace:*
-        version: link:../env
-      zod:
-        specifier: ^4
-        version: 4.6.5
-    devDependencies:
-      '@startup/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      '@types/node':
-        specifier: ^24
-        version: 24.19.1
-      typescript:
-        specifier: ^6
-        version: 6.0.3
-      vitest:
-        specifier: ^5.0.3
-        version: 5.0.3(@opentelemetry/api@1.9.1)(@types/node@24.19.1)(vite@8.3.1(@types/node@24.19.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
   packages/email:
     dependencies:
       '@startup/env':
