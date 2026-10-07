@@ -186,5 +186,6 @@ These are intentional for now:
 - **Single-item subscriptions.** Multi-item subscriptions are not modeled.
 - **Timestamps without time zone.** Billing tables follow the repository convention (`timestamp` without time zone).
 - **Duplicate `drizzle-orm` resolution.** PGlite (a billing test dependency) is an optional peer of `drizzle-orm`. As a result, `@startup/db` and `@startup/billing` resolve one copy of `drizzle-orm`, while Better Auth's Drizzle adapter resolves a sibling copy of the same version.
+- **No reservation of an open checkout.** Two concurrent checkout requests from one user each get a Stripe Checkout Session, and both can complete. The template does not reserve or reuse an open session. Turn on Stripe Checkout's *Limit customers to one subscription* for the Pro price (see `docs/template-checklist.md`), so Stripe refuses the second one.
 - **No payment recovery flow.** Users with a `past_due`, `incomplete`, `unpaid`, or `paused` subscription are blocked from a new checkout, but there is no in-app way (such as a customer portal) to fix the payment or resume the subscription yet.
 - Customer portal, plan changes, coupons, taxes, usage billing, seats, and credits are out of scope. Trials exist only as Stripe's `trialing` status.
