@@ -391,6 +391,7 @@ export function renderStatus(state) {
       for (const other of unit.elsewhere ?? []) {
         parts.push(`(${other.status} on ${other.branch})`);
       }
+      if (unit.notes) parts.push(`note: ${unit.notes}`);
       out.push(`    ${parts.filter(Boolean).join("  ")}`);
     }
   }

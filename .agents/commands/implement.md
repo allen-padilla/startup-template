@@ -85,10 +85,7 @@ Then run `pnpm verify:full` when the Verification section of `AGENTS.md` require
 
 ## 6. Record
 
-When the task implements a plan slice and its required verification has passed:
-
-- set the slice's status to `done` in the plan, and add the pull request once it exists
-- run `pnpm agent:check`, because the plan changed after `pnpm verify`
+When the task implements a plan slice, add the pull request to its list once one exists. The slice stays `in-progress` while it is reviewed. Set it to `done` only when the task also says review has passed, in the last commit before the merge, and then run `pnpm agent:check`, because the plan changed after `pnpm verify`. The Task State section of `.agents/rules/repository.md` has the rules.
 
 If the session ends before the verification passes, leave the slice `in-progress`, so the next session continues from the right place.
 
@@ -121,5 +118,3 @@ Return:
 - deviations from the spec or plan, if any
 - remaining concerns
 - whether the task is complete
-
-Do not commit unless explicitly requested.

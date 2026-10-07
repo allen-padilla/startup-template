@@ -7,7 +7,6 @@ These rules apply to all substantive work in this repository. They add operation
 - Read relevant files before editing them.
 - Prefer existing patterns over introducing new abstractions.
 - Keep changes scoped to the requested task. Do not modify unrelated files.
-- Do not commit unless explicitly requested.
 
 ## Architecture
 
@@ -117,9 +116,10 @@ See the Task State section of `docs/architecture/agent-workflows.md` for how the
 - The status recorded in a plan in `docs/plans/` says where that work stands. A conversation does not.
 - Start a task by reading the state: run `pnpm agent:status`, then check it against `git status` and the branch's commits.
 - When the record and the repository disagree, the repository is right. Correct the record and report the difference.
-- Set a slice to `in-progress` when work on it starts, and to `done` only after its required verification passes.
+- Set a slice to `in-progress` when work on it starts. It stays `in-progress` through verification and review.
+- Set a slice to `done` in the last commit of its pull request, once its required verification has passed and review has found no blockers. When review finds a blocker after that, set it back to `in-progress` on the same branch.
 - Change a slice's status on the same branch as the work it describes, so the state and the code merge together.
-- Change only the status of your own slice.
+- Change only the status of your own slice. The exception is correcting a record that the repository contradicts; report that correction.
 
 ## Completion
 

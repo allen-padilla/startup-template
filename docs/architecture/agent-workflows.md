@@ -92,8 +92,8 @@ A plan's own status is not stored. It follows from its slices, so the two cannot
 ### Life of a Slice
 
 1. `pending`: planned, not started.
-2. `in-progress`: a session has started it on the named branch.
-3. `done`: its required verification has passed.
+2. `in-progress`: a session has started it on the named branch. It stays here through verification and review.
+3. `done`: verification has passed and review found no blockers, recorded in the last commit before the merge, so `main` never shows a `done` slice that was not reviewed.
 
 A slice can also be `blocked` or `dropped`. `docs/plans/README.md` defines the format. The Task State section of `.agents/rules/repository.md` has the rules for keeping a status current.
 
@@ -198,4 +198,4 @@ The Verification section of `AGENTS.md` is the one statement of what must run an
 
 ## Commits
 
-No workflow, command, role, or skill commits automatically. Commit only when the user explicitly requests it.
+No workflow, command, or skill commits automatically. `AGENTS.md` states the rule.

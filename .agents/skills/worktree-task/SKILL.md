@@ -55,8 +55,7 @@ When resolving conflicts, inspect `git status` and keep the intent of both sides
 
 ## Database
 
-- Follow the `database-migration` skill for any schema change.
-- Only one active worktree may own schema and migration changes at a time. Confirm this task is the owner before running `pnpm db:generate`.
+- Follow the `database-migration` skill for any schema change, and confirm this task owns schema changes before running `pnpm db:generate` (see the Parallel Work rules in `.agents/rules/repository.md`).
 - Never generate a migration independently from the same base as another active schema branch. If that branch lands first, rebase onto the updated `main` and regenerate this task's migration.
 - All worktrees share the local PostgreSQL on port `5432`. `pnpm db:migrate` changes the database for every worktree, so migration work is serialized. Do not run `pnpm db:up` from a task worktree while the shared database is running.
 
@@ -74,20 +73,11 @@ Follow the normal implementation workflow in `.agents/commands/implement.md`:
 2. `pnpm verify`
 3. `pnpm verify:full` when the canonical policy in `AGENTS.md` requires it
 
-`pnpm verify` can run in several worktrees at once. `pnpm test:e2e` and `pnpm verify:full` use port `3000` and the shared database, so only one worktree may run them at a time. If port `3000` is in use, report it. Do not stop another worktree's server.
+`pnpm verify` can run in several worktrees at once; E2E runs cannot (see the Parallel Work rules in `.agents/rules/repository.md`). If port `3000` is in use, report it. Do not stop another worktree's server.
 
 ## Completion
 
-Before reporting complete:
-
-- run `git status`
-- inspect `git diff --stat` and `git diff`
-- report files changed
-- report verification results
-- report the status of the plan's slices, when a plan covers the task
-- report any overlap, hotspot changes, database state changes, and remaining concerns
-
-Do not commit unless explicitly requested.
+Follow the Completion section of `.agents/rules/repository.md`. In the report, also include any overlap, hotspot changes, and database state changes.
 
 ## Integration
 

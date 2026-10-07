@@ -299,7 +299,7 @@ spec and plan. Do not merge it.
 
 Change the slice number, the branch name, and the named skill for each slice. Add "Run pnpm verify:full" to the prompt for slices that change sign-in, billing, routing, or a complete user workflow, such as slices 2, 3, and 5 here.
 
-The fresh session does not need to be told what is already done. `implement.md` starts by running `pnpm agent:status` and reading the status recorded in the plan. The agent sets the slice to `in-progress` when it starts and to `done` when its required verification passes. It does so on the slice's branch, so the status merges together with the code.
+The fresh session does not need to be told what is already done. `implement.md` starts by running `pnpm agent:status` and reading the status recorded in the plan. The agent sets the slice to `in-progress` when it starts. It becomes `done` in the last commit before the merge, once verification has passed and the review is clean. Both changes happen on the slice's branch, so the status merges together with the code.
 
 If a session ends before its slice is finished, start a new one in the same checkout:
 
@@ -329,7 +329,7 @@ Do not modify files. Report findings as blocker, important, or minor, and say
 whether it is ready to merge.
 ```
 
-Paste blocker and important findings back into the implementing session, or into a new one with the branch name. Merge only when the review is clean and both CI checks pass. CI may not block merging on a private repository on the GitHub Free plan, so check it yourself. See [CI](../architecture/continuous-integration.md#branch-protection).
+Paste blocker and important findings back into the implementing session, or into a new one with the branch name. When the review is clean, ask that session to set the slice to `done` and push. Merge only then, and only when both CI checks pass. CI may not block merging on a private repository on the GitHub Free plan, so check it yourself. See [CI](../architecture/continuous-integration.md#branch-protection).
 
 Repeat steps 4 and 5 for every slice.
 

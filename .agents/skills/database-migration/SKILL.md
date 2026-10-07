@@ -21,9 +21,7 @@ Do not hand-edit generated migration metadata unless the task specifically requi
 
 ## Parallel Work
 
-Only one active task or worktree may own schema and migration changes at a time.
-
-Before generating a migration:
+Schema and migration changes have one owner at a time (see the Parallel Work rules in `.agents/rules/repository.md`). Before generating a migration:
 
 - check `git worktree list` and active plans for another task that changes `packages/db/src/schema/` or `packages/db/drizzle/`
 - if another task owns schema changes, stop and report the overlap

@@ -63,7 +63,7 @@ Playwright runs the application with `BETTER_AUTH_URL=http://127.0.0.1:3000`, th
 
 Playwright runs against a production-style Next.js server for more deterministic testing.
 
-`pnpm test:e2e` builds `@startup/web` first, then Playwright starts `scripts/start-e2e-server.sh`, which `exec`s `next start` on `127.0.0.1:3000`. Playwright never reuses an existing server and stops the server when the run finishes. Playwright also starts the observability stub on `127.0.0.1:9999`. Because the ports are fixed, only one worktree at a time may run E2E tests. See `parallel-development.md`.
+`pnpm test:e2e` builds `@startup/web` first, then Playwright starts `scripts/start-e2e-server.sh`, which `exec`s `next start` on `127.0.0.1:3000`. Playwright never reuses an existing server and stops the server when the run finishes. Playwright also starts the observability stub on `127.0.0.1:9999`. Because the ports are fixed, E2E runs are serialized across worktrees. See `parallel-development.md`.
 
 ### Prerequisites
 

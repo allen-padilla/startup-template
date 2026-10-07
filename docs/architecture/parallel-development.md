@@ -180,7 +180,7 @@ Re-run `pnpm install --frozen-lockfile` and `pnpm verify` after updating.
 
 ## Database Migration Ownership
 
-Only one active task or worktree may own schema and migration changes at a time.
+The rule, one owner of schema and migration changes at a time, is in the Parallel Work section of `.agents/rules/repository.md`. This section explains it.
 
 Drizzle numbers migrations in sequence and records each one in `packages/db/drizzle/meta/_journal.json` with a schema snapshot. Two branches that run `pnpm db:generate` from the same base both create the next migration number. Each branch's snapshot also assumes it is the only change, and the journal entries conflict. Merging both produces colliding or inconsistent migration history, even when Git reports no text conflict.
 
