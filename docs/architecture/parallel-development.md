@@ -20,7 +20,7 @@ When no parallel work is active, a small, well-scoped task may still use the nor
 
 ## Main Checkout as Coordinator
 
-The main checkout, `~/dev/startup-template`, stays on `main`. Once several tasks are running at the same time, it is used primarily for:
+The main checkout stays on `main`. Once several tasks are running at the same time, it is used primarily for:
 
 - updating `main`
 - creating worktrees
@@ -33,13 +33,13 @@ Feature implementation happens in task worktrees. This keeps `main` clean and ma
 
 ## Worktree Location
 
-Worktrees live in `~/dev/worktrees/`, outside the main checkout:
+Worktrees live in a `worktrees/` directory beside the main checkout, named after the project and the task:
 
-`~/dev/worktrees/startup-template-<task>`
+`../worktrees/<project>-<task>`
 
-For example, `~/dev/worktrees/startup-template-profile-settings`.
+For example, a checkout at `~/projects/acme` puts a task's worktree at `~/projects/worktrees/acme-profile-settings`. The commands below use that relative path, so they work wherever the checkout lives.
 
-Never create a worktree inside `~/dev/startup-template`. A nested worktree shows up as untracked files in the main checkout and can be scanned by repository tooling.
+Never create a worktree inside the main checkout. A nested worktree shows up as untracked files in the main checkout and can be scanned by repository tooling.
 
 ## Branch Naming
 
@@ -57,13 +57,10 @@ Use the same `<task>` in the branch and worktree names, so each worktree maps to
 From the main checkout:
 
 ```bash
-cd ~/dev/startup-template
 git switch main
 git pull
 
-git worktree add -b feat/<task> \
-  ~/dev/worktrees/startup-template-<task> \
-  main
+git worktree add -b feat/<task> ../worktrees/<project>-<task> main
 
 git worktree list
 ```
@@ -264,11 +261,10 @@ Use the repository `review` command (`.agents/commands/review.md`) for a full re
 After the pull request is merged, clean up from the main checkout:
 
 ```bash
-cd ~/dev/startup-template
 git switch main
 git pull
 
-git worktree remove ~/dev/worktrees/startup-template-<task>
+git worktree remove ../worktrees/<project>-<task>
 git worktree prune
 git worktree list
 ```

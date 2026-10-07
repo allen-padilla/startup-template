@@ -131,9 +131,7 @@ Follow docs/template-checklist.md, section "Replace Immediately":
 - packages/email/src/templates/brand.ts: productName "Feedbox"
 - apps/web/README.md
 
-Keep the @startup/* package scope. Also update the checkout paths in
-docs/architecture/parallel-development.md to ~/dev/feedbox and
-~/dev/worktrees/feedbox-<task>.
+Keep the @startup/* package scope.
 
 Work on a new branch called chore/rename-to-feedbox. Run pnpm verify, then run
 git grep -n -i -E "allen|startup-template|startup template" and list every
