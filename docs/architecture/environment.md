@@ -24,6 +24,8 @@ Production secrets are provided by the deployment environment.
 
 Both files live in the repository root. The application and the database tooling read the root `.env.local`.
 
+The local preflight uses Node's dotenv parser, like the application. Shell variables override the file, including an explicitly empty value. Turbo's dev task passes the supported server variables through in strict mode; browser variables are included by its Next.js framework inference.
+
 ## Variables
 
 | Variable                                                        | Required | Visibility    | Purpose                                       |

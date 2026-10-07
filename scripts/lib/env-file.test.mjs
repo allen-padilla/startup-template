@@ -4,6 +4,7 @@ import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node
 import os from "node:os";
 import path from "node:path";
 import { describe, it } from "node:test";
+import { parseEnv } from "node:util";
 
 import { hasSecret, withSecret } from "./env-file.mjs";
 
@@ -36,15 +37,23 @@ describe("hasSecret", () => {
 });
 
 describe("withSecret", () => {
-  it("replaces the assignment in place and keeps its prefix", () => {
-    assert.equal(withSecret("A=1\nBETTER_AUTH_SECRET=\nB=2\n", "s"), "A=1\nBETTER_AUTH_SECRET=s\nB=2\n");
-    assert.equal(withSecret("export BETTER_AUTH_SECRET=old\n", "s"), "export BETTER_AUTH_SECRET=s\n");
-    assert.equal(withSecret("  BETTER_AUTH_SECRET = old # c\n", "s"), "  BETTER_AUTH_SECRET=s\n");
+  it("sets the effective secret without changing existing assignments", () => {
+    for (const text of [
+      "A=1\nBETTER_AUTH_SECRET=\nB=2\n",
+      "export BETTER_AUTH_SECRET=old\n",
+      "  BETTER_AUTH_SECRET = old # c\n",
+      "BETTER_AUTH_SECRET=old\nBETTER_AUTH_SECRET=\n",
+      'OTHER="first\nBETTER_AUTH_SECRET=\nlast"\n',
+    ]) {
+      const result = withSecret(text, "s");
+      assert.ok(result.startsWith(text));
+      assert.deepEqual(parseEnv(result), { ...parseEnv(text), BETTER_AUTH_SECRET: "s" });
+    }
   });
 
   it("appends the assignment when there is none", () => {
     assert.equal(withSecret("A=1", "s"), "A=1\nBETTER_AUTH_SECRET=s\n");
-    assert.equal(withSecret("A=1\n\n", "s"), "A=1\nBETTER_AUTH_SECRET=s\n");
+    assert.equal(withSecret("A=1\n\n", "s"), "A=1\n\nBETTER_AUTH_SECRET=s\n");
     assert.equal(withSecret("# BETTER_AUTH_SECRET=old\n", "s"), "# BETTER_AUTH_SECRET=old\nBETTER_AUTH_SECRET=s\n");
   });
 });
@@ -57,7 +66,7 @@ describe("ensure-env-secret", () => {
     }).trim();
 
   const secretOf = (directory) =>
-    /^BETTER_AUTH_SECRET=(.*)$/m.exec(readFileSync(path.join(directory, ".env.local"), "utf8"))?.[1] ?? "";
+    parseEnv(readFileSync(path.join(directory, ".env.local"), "utf8")).BETTER_AUTH_SECRET ?? "";
 
   const fixture = (t) => {
     const directory = mkdtempSync(path.join(os.tmpdir(), "env-secret-"));
@@ -77,12 +86,13 @@ describe("ensure-env-secret", () => {
     assert.equal(run(directory), "kept");
     assert.equal(secretOf(directory), created);
 
-    writeFileSync(path.join(directory, ".env.local"), EXAMPLE.replace("BETTER_AUTH_SECRET=", "BETTER_AUTH_SECRET= # lost") + "STRIPE_SECRET_KEY=sk_test_keep\n");
+    const existing = EXAMPLE.replace("BETTER_AUTH_SECRET=", "BETTER_AUTH_SECRET= # lost") + "STRIPE_SECRET_KEY=sk_test_keep\n";
+    writeFileSync(path.join(directory, ".env.local"), existing);
     assert.equal(run(directory), "filled");
     const filled = readFileSync(path.join(directory, ".env.local"), "utf8");
     assert.notEqual(secretOf(directory), created);
     assert.match(filled, /^STRIPE_SECRET_KEY=sk_test_keep$/m);
-    assert.equal(filled.split("\n").length, EXAMPLE.split("\n").length + 1);
+    assert.ok(filled.startsWith(existing));
   });
 
   it("keeps an exported secret", (t) => {

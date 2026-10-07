@@ -33,19 +33,14 @@ fail() {
 # Prints the value of a variable from the shell environment or .env.local.
 # Callers must capture the output and never echo it.
 read_value() {
-  local name="$1"
-  local value="${!name:-}"
+  node --input-type=module - "$1" "$ENV_FILE" <<'NODE'
+import { existsSync, readFileSync } from "node:fs";
+import { parseEnv } from "node:util";
 
-  if [ -z "$value" ] && [ -f "$ENV_FILE" ]; then
-    value="$(sed -n "s/^[[:space:]]*\(export[[:space:]]\{1,\}\)\{0,1\}${name}=//p" "$ENV_FILE" | tail -n 1)"
-    value="${value%$'\r'}"
-    value="${value%\"}"
-    value="${value#\"}"
-    value="${value%\'}"
-    value="${value#\'}"
-  fi
-
-  printf '%s' "$value"
+const [name, file] = process.argv.slice(2);
+const local = existsSync(file) ? parseEnv(readFileSync(file, "utf8")) : {};
+process.stdout.write(process.env[name] ?? local[name] ?? "");
+NODE
 }
 
 echo "Toolchain"

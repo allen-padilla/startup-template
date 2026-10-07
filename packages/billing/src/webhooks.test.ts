@@ -239,6 +239,44 @@ describe("subscription synchronization", () => {
     ]);
   });
 
+  it("keeps a cancellation when concurrent refreshes overlap", async () => {
+    let current = stripeSubscription();
+    let firstStarted!: () => void;
+    let releaseFirst!: () => void;
+    const started = new Promise<void>((resolve) => { firstStarted = resolve; });
+    const released = new Promise<void>((resolve) => { releaseFirst = resolve; });
+    let calls = 0;
+    const stripe = {
+      subscriptions: {
+        retrieve: vi.fn(async () => {
+          const snapshot = current;
+          if (++calls === 1) {
+            firstStarted();
+            await released;
+          }
+          return snapshot;
+        }),
+      },
+    } as unknown as StripeSubscriptionsClient;
+
+    const older = handleBillingWebhookEvent(
+      receive("customer.subscription.created", { id: "sub_test_1" }),
+      { db, stripe },
+    );
+    await started;
+    current = stripeSubscription({ status: "canceled" });
+    const newer = handleBillingWebhookEvent(
+      receive("customer.subscription.deleted", { id: "sub_test_1" }),
+      { db, stripe },
+    );
+    releaseFirst();
+    await Promise.all([older, newer]);
+
+    expect(await subscriptionRows()).toEqual([
+      expect.objectContaining({ status: "canceled" }),
+    ]);
+  });
+
   it("records Stripe's subscription status, not the checkout outcome", async () => {
     const { stripe, retrieve } = fakeStripe(
       stripeSubscription({ status: "incomplete" }),
@@ -337,6 +375,21 @@ describe("subscription synchronization", () => {
       ),
     ).rejects.toThrow("connection failed");
     expect(await subscriptionRows()).toEqual([]);
+  });
+
+  it("allows a retry after a failed Stripe refresh", async () => {
+    const { stripe, retrieve } = fakeStripe(stripeSubscription());
+    retrieve.mockRejectedValueOnce(new Error("temporarily unavailable"));
+    const event = receive("customer.subscription.updated", { id: "sub_test_1" });
+
+    await expect(handleBillingWebhookEvent(event, { db, stripe })).rejects.toThrow(
+      "temporarily unavailable",
+    );
+    await handleBillingWebhookEvent(event, { db, stripe });
+
+    expect(await subscriptionRows()).toEqual([
+      expect.objectContaining({ status: "active" }),
+    ]);
   });
 
   it("fails when the database is unavailable, so the delivery is retried", async () => {

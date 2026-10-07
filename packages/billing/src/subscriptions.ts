@@ -44,7 +44,7 @@ export type SubscriptionSyncResult =
  */
 export async function syncStripeSubscription(
   subscription: Stripe.Subscription,
-  { db = defaultDb }: { db?: Database } = {},
+  { db = defaultDb }: { db?: Pick<Database, "query" | "insert"> } = {},
 ): Promise<SubscriptionSyncResult> {
   const { stripeCustomerId, ...state } = toSubscriptionState(subscription);
 
