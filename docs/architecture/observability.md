@@ -44,7 +44,7 @@ Observability is initialized in `apps/web`:
 
 - `src/instrumentation-client.ts` initializes Sentry and PostHog in the browser.
 - `src/instrumentation.ts` loads `sentry.server.config.ts` or `sentry.edge.config.ts` for the active runtime.
-- `src/app/global-error.tsx` reports uncaught rendering errors to Sentry.
+- `src/app/error.tsx` reports rendering errors in a page to Sentry and shows a retry inside the root layout. `src/app/global-error.tsx` reports errors in the root layout itself, which `error.tsx` cannot catch.
 
 Runtime configuration comes from `@startup/env/client`:
 
