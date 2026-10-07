@@ -140,6 +140,7 @@ jobs:
             echo "::warning title=Not deployed::COOLIFY_WEBHOOK_URL and COOLIFY_TOKEN are not set as repository secrets, so this commit was not deployed."
             exit 0
           fi
-          curl --fail --silent --show-error "$COOLIFY_WEBHOOK_URL" \
+          # Coolify's /api/v1/deploy accepts POST only; GET answers "post required".
+          curl --fail --silent --show-error --request POST "$COOLIFY_WEBHOOK_URL" \
             -H "Authorization: Bearer $COOLIFY_TOKEN"
           echo "Deployment triggered."
