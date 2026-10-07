@@ -13,6 +13,10 @@ export const serverSchema = z
     BETTER_AUTH_SECRET: z.string().min(32),
     BETTER_AUTH_URL: z.string().url(),
 
+    // Set by a single-instance host so the server applies migrations when it
+    // starts. See docs/architecture/deployment.md.
+    RUN_MIGRATIONS: optional(z.enum(["true", "false"])),
+
     // Billing is optional until a billing endpoint is invoked. @startup/billing
     // raises a configuration error when a required value is missing.
     STRIPE_SECRET_KEY: optional(z.string().regex(/^(sk|rk)_(test|live)_/)),
@@ -49,6 +53,7 @@ export const serverEnv = serverSchema.parse({
   DATABASE_URL: process.env.DATABASE_URL,
   BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+  RUN_MIGRATIONS: process.env.RUN_MIGRATIONS,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
   STRIPE_PRICE_PRO_MONTHLY: process.env.STRIPE_PRICE_PRO_MONTHLY,

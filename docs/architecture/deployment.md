@@ -2,15 +2,16 @@
 
 ## Purpose
 
-This document describes the intended production model. The template does not include deployment configuration, and nothing in the repository deploys automatically.
+This document describes the intended production model. The template ships a `Dockerfile`, a server that can apply migrations when it starts, and a deploy workflow that triggers Coolify once `main` is green. The host itself is left to each project.
 
-The model avoids depending on one vendor where it does not have to. Where a choice is needed, the defaults are a Next.js host such as Vercel and a managed PostgreSQL database.
+The model avoids depending on one vendor where it does not have to. The defaults are a Docker host, Coolify by default, and a managed PostgreSQL database.
 
 ## Model
 
 | Part          | Production                                                        |
 | ------------- | ----------------------------------------------------------------- |
-| Application   | `apps/web`, on Vercel or any host that runs Next.js on Node.js    |
+| Application   | `apps/web`, as the image built by the root `Dockerfile`, on Coolify or any Docker host |
+| Deployment    | `.github/workflows/deploy.yml` triggers Coolify after both checks pass on `main` |
 | Database      | managed PostgreSQL                                                |
 | Secrets       | the deployment platform's secret management                       |
 | Verification  | GitHub Actions, before deployment                                 |
@@ -20,14 +21,29 @@ The model avoids depending on one vendor where it does not have to. Where a choi
 
 ## Application
 
-The deployable application is `apps/web`. It is a standard Next.js App Router application.
+The deployable application is `apps/web`, packaged by the root `Dockerfile` into one image that listens on port `3000`.
 
-- Build from the repository root, so workspace packages resolve: `pnpm install --frozen-lockfile`, then `pnpm build`.
-- On a platform with a project root setting, such as Vercel, set the root directory to `apps/web`. The platform still needs access to the whole repository.
-- The host must run Node.js 24.
+- `next build` runs with `output: "standalone"` and traces from the repository root, so the image holds the server, the workspace packages it uses, and only the `node_modules` they need.
+- The runtime stage copies the standalone output, the static assets, and the committed migrations, and runs `node apps/web/server.js` as the unprivileged `node` user on Node.js 24.
+- `GET /up` answers `ok` without touching the database or a session. Point the host's health check at it.
+- Browser-visible `NEXT_PUBLIC_*` values and `SENTRY_ORG` and `SENTRY_PROJECT` are build arguments, because Next.js inlines them at build time. `SENTRY_AUTH_TOKEN` is a build secret (`docker build --secret id=SENTRY_AUTH_TOKEN`); without it, source-map upload is skipped. Everything else is read at runtime.
 - Server code runs on the Node.js runtime. `@startup/db` connects with `pg` over TCP, which the Edge runtime does not support.
 
-The repository has no `Dockerfile` and does not use Next.js `output: "standalone"`. Add them in a dedicated change if you deploy to containers.
+To try the image locally, build it and run it against the Compose database. Inside the container, `localhost` is the container itself, so the local services are reached through `host.docker.internal`:
+
+```bash
+docker build -t my-app .
+docker run --rm -p 3000:3000 \
+  -e DATABASE_URL=postgresql://startup:startup@host.docker.internal:5432/startup \
+  -e BETTER_AUTH_SECRET="$(openssl rand -base64 32)" \
+  -e BETTER_AUTH_URL=http://localhost:3000 \
+  -e RUN_MIGRATIONS=true \
+  my-app
+```
+
+On Coolify, add the repository as a resource with the Dockerfile build pack, port `3000`, health check path `/up`, and the real domain. Turn off automatic deployment on push, so that only commits that passed both checks are deployed (see CI Before Deploy). Set the runtime variables on the resource, and mark the `NEXT_PUBLIC_*` and `SENTRY_*` values as build variables. Never mark `NODE_ENV` as a build variable: with `NODE_ENV=production`, `pnpm install` skips the development dependencies the build needs.
+
+A platform that builds Next.js itself, such as Vercel, needs no `Dockerfile`: set its root directory to `apps/web`, provide the required variables at build time, and run migrations as a release step with `pnpm db:migrate` from a full install.
 
 ## Database
 
@@ -45,9 +61,10 @@ Set these in the deployment platform. `.env.local` is not used in production, an
 
 | Variable                                                        | Required | Needed at       | Notes                                               |
 | --------------------------------------------------------------- | -------- | --------------- | --------------------------------------------------- |
-| `DATABASE_URL`                                                  | yes      | build, runtime  | secret                                              |
-| `BETTER_AUTH_SECRET`                                            | yes      | build, runtime  | secret, at least 32 characters                      |
-| `BETTER_AUTH_URL`                                               | yes      | build, runtime  | public origin of the deployment                     |
+| `DATABASE_URL`                                                  | yes      | runtime         | secret; the `Dockerfile` sets a placeholder for the build |
+| `BETTER_AUTH_SECRET`                                            | yes      | runtime         | secret, at least 32 characters; placeholder for the build |
+| `BETTER_AUTH_URL`                                               | yes      | runtime         | public origin of the deployment; placeholder for the build |
+| `RUN_MIGRATIONS`                                                | no       | runtime         | `true` applies migrations at container start (single instance) |
 | `STRIPE_SECRET_KEY`                                             | billing  | runtime         | secret                                              |
 | `STRIPE_WEBHOOK_SECRET`                                         | billing  | runtime         | secret                                              |
 | `STRIPE_PRICE_PRO_MONTHLY`                                      | billing  | runtime         | live-mode Price ID                                  |
@@ -58,7 +75,7 @@ Set these in the deployment platform. `.env.local` is not used in production, an
 | `SENTRY_ORG`, `SENTRY_PROJECT`                                  | no       | build           | source-map upload                                   |
 | `SENTRY_AUTH_TOKEN`                                             | no       | build           | secret, source-map upload                           |
 
-The production build validates the required server variables through `@startup/env`, so they must exist in the build environment as well as at runtime. The build does not need to reach the database.
+The production build validates the required server variables through `@startup/env`, so they must exist in the build environment as well as at runtime. The build does not need to reach the database, so the `Dockerfile` satisfies validation with placeholders, and the real values are read at request time. A platform that builds without the `Dockerfile` must provide them itself.
 
 Set `SMTP_URL` and `EMAIL_FROM` together, or leave both empty to disable email. Setting only one fails validation. Both local defaults from `.env.example` must change: a deployment that still points at `smtp://localhost:1025` fails every send with a delivery error.
 
@@ -83,19 +100,12 @@ Limit who can read production secrets. Rotate a secret when someone with access 
 
 ## Migrations
 
-Migrations are a deliberate release step. The application never migrates the database when it starts.
+Migrations are a deliberate release step, run by the image. With `RUN_MIGRATIONS=true` in the container's environment, the server applies the committed migrations in `packages/db/drizzle/` to `DATABASE_URL` before it accepts requests (`migrateDatabase` from `@startup/db/migrate`, called from `apps/web/src/instrumentation.ts`). It needs no `drizzle-kit`. A failed migration stops the container before it serves traffic, so the previous version keeps running, and the container log shows which migration failed.
 
-```bash
-pnpm db:migrate
-```
-
-`pnpm db:migrate` applies the committed migrations in `packages/db/drizzle/` to the database in `DATABASE_URL`. A value in the shell environment takes precedence over the root `.env.local`.
-
-- Run it from a trusted environment, such as a release pipeline, with the production `DATABASE_URL` supplied by secret management.
-- It needs the full install, including development dependencies, because `drizzle-kit` is a development dependency of `@startup/db`.
-- Apply migrations before the new application version serves traffic.
+- `RUN_MIGRATIONS` is for a single instance. With replicas, leave it unset and run `pnpm db:migrate` once as a release step, from a full install with the production `DATABASE_URL` supplied by secret management.
+- Do not use Coolify's pre-deployment command for migrations. It runs inside the container that is still serving the old image.
 - Apply only migrations that are committed, reviewed, and merged to `main`. Do not run `pnpm db:generate` against production, and do not use `drizzle-kit push`.
-- Check which database `DATABASE_URL` points to before running the command. A production URL that is exported in a shell or stored in `.env.local` turns a routine local `pnpm db:migrate` into a production migration. Do not keep production URLs in either place.
+- Locally, `pnpm db:migrate` applies the same migrations through `drizzle-kit`, and both record them in the same table. Check which database `DATABASE_URL` points to before running either command. A production URL exported in a shell or stored in `.env.local` turns a routine local migration into a production one. Do not keep production URLs in either place.
 
 The previous application version keeps serving traffic while a migration runs. Keep each migration compatible with the version that is currently deployed:
 
@@ -170,6 +180,8 @@ Subscribe it to the events the application handles:
 - `customer.subscription.updated`
 - `customer.subscription.deleted`
 
+Set the endpoint's API version to the version pinned by the installed `stripe` SDK (see `billing.md`). Webhook payloads follow the endpoint's version, not the SDK's, so a mismatch changes the shapes the handler reads.
+
 Then configure:
 
 - `STRIPE_WEBHOOK_SECRET`: the signing secret of that endpoint. It differs from the secret the Stripe CLI prints locally, and it differs between test mode and live mode.
@@ -201,33 +213,32 @@ See `observability.md`.
 
 ## CI Before Deploy
 
-Deploy only commits that passed both required checks, `Lint, Typecheck, Test, Build` and `Playwright`.
+`.github/workflows/deploy.yml` runs after the Verify and E2E workflows complete on `main`. It checks that both passed for the same commit, then calls the Coolify deploy webhook. It needs two repository secrets:
 
-A hosting platform that deploys on every push to `main` does not wait for GitHub Actions by default. Branch protection is also advisory on the current repository plan. Until one of them enforces the checks:
+| Secret                | Value                                                                         |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `COOLIFY_WEBHOOK_URL` | the resource's deploy webhook URL, from the Webhooks page of the resource     |
+| `COOLIFY_TOKEN`       | an API token from Keys & Tokens in Coolify, with permission to deploy        |
 
-- merge only pull requests with passing checks
-- confirm that `main` is green before promoting a deployment to production
+Without them the workflow logs that nothing is deployed, so a new project deploys nowhere until it is configured. Turn off Coolify's automatic deployment on push, or it deploys before the checks run.
 
-See `continuous-integration.md`.
+Require both checks in the `main` ruleset as well (see `continuous-integration.md`), so that an unverified commit cannot reach `main` at all.
 
 ## Release Checklist
 
-1. CI is green on the commit being deployed.
-2. New environment variables are set in the deployment platform.
+1. CI is green on the commit being deployed, and the Deploy workflow triggered Coolify.
+2. New environment variables are set on the host.
 3. Migrations are reviewed and compatible with the currently deployed version.
-4. Migrations are applied.
-5. The application is deployed.
-6. The homepage and `/api/auth/ok` respond.
-7. When billing changed, a Stripe test event reaches the webhook endpoint.
-8. When email changed, a password reset request for a test account delivers a message.
+4. The deployment finished, and the container log shows `Migrations applied.` when `RUN_MIGRATIONS` is set.
+5. `/up`, the homepage, and `/api/auth/ok` respond.
+6. When billing changed, a Stripe test event reaches the webhook endpoint.
+7. When email changed, a password reset request for a test account delivers a message.
 
 ## Not Included
 
 The template deliberately leaves these to each project:
 
-- deployment platform configuration
-- a container image
-- automated deployment or migration pipelines
+- the host itself: Coolify is documented, and any Docker host works
 - preview environment databases
 - database backups and restore testing
 - uptime monitoring and alerting

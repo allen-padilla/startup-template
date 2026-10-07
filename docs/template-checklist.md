@@ -42,7 +42,7 @@ These values identify the template or its maintainer. Replace them before the fi
 
 These have working local defaults, or are left to each product. Each needs a real value or a decision before the application serves users. See `docs/architecture/deployment.md`.
 
-- [ ] **Deployment provider and project**: create the project, and set the root directory to `apps/web` where the platform asks for one.
+- [ ] **Host**: a Coolify resource, or any Docker host, built from the root `Dockerfile` with port `3000`, health check `/up`, and automatic deployment on push turned off. Mark `NEXT_PUBLIC_*` and `SENTRY_*` values as build variables, set `RUN_MIGRATIONS=true` for a single instance, and add `COOLIFY_WEBHOOK_URL` and `COOLIFY_TOKEN` as GitHub secrets so `deploy.yml` deploys green commits. See `docs/architecture/deployment.md`.
 - [ ] **Deployment URL**: your production domain.
 - [ ] **`BETTER_AUTH_URL`**: the production origin. The local default is `http://localhost:3000`.
 - [ ] **`BETTER_AUTH_SECRET`**: a new value for each environment. Never reuse the CI placeholder or a value from another project.

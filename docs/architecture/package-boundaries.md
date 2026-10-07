@@ -42,6 +42,7 @@ flowchart TD
   web --> billing
   web --> ui
   web --> env
+  web --> db
   auth --> db
   auth --> email
   auth --> env
@@ -84,7 +85,7 @@ See `environment.md`.
 
 ### @startup/db
 
-PostgreSQL access through Drizzle ORM: the shared connection (`db`) and schema.
+PostgreSQL access through Drizzle ORM: the shared connection (`db`) and schema, plus `migrateDatabase` (`./migrate`), which the server calls at start when `RUN_MIGRATIONS` is `true`.
 
 Server-only. Depends on `@startup/env`.
 

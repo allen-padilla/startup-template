@@ -184,6 +184,9 @@ importers:
       '@startup/billing':
         specifier: workspace:*
         version: link:../../packages/billing
+      '@startup/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@startup/env':
         specifier: workspace:*
         version: link:../../packages/env
